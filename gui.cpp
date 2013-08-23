@@ -413,18 +413,24 @@ Manga_GUI::start_download( void *user_data)
 				(*w->Q)[0].end_chapter
 		);
 		/* remove the first value from the queue and the combo box */
-		(*w->Q).erase( (*w->Q).begin() );
+		if ((*w->Q).size()!=0)
+			(*w->Q).erase( (*w->Q).begin() );
 		gtk_combo_box_remove_text( (GtkComboBox*)w->D1, 0);
 
 		/* start the download */
 		(*w->DLDER).run();
 	}
 	/* reinit the stuff */
+	gtk_combo_box_set_active( (GtkComboBox*)w->D1, -1);
+	gtk_entry_set_text( (GtkEntry*)w->D2, "");
+	gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
+	gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.0);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.0);
 	gtk_button_set_label( (GtkButton*)w->D7, "Download");
 	gtk_label_set_text( (GtkLabel*) w->D8, "" );
 	*w->ISDL = 0;
+
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
 	return 0;
@@ -492,6 +498,7 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 		gtk_dialog_run (GTK_DIALOG (dialog1));
 		gtk_widget_destroy (dialog1);
 		/* reset stuffs */
+		gtk_combo_box_set_active( (GtkComboBox*)w->D1, -1);
 		gtk_entry_set_text( (GtkEntry*)w->D2, "");
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
