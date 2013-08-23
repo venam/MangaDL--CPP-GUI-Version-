@@ -4,6 +4,9 @@ A manga downloader with a GTK frontend.
 
 The program is still in alpha stage and needs to be tested.
 
+Depends on: libcURL, sqlite3, and GTK.
+
+
 Compile with : <pre>g++ gui.cpp `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs` -lsqlite3 -lcurl -o MangaDL</pre>
 
 ![Main](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/main.png)
