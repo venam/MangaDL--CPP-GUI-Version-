@@ -1,4 +1,36 @@
 /*
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright (c) 2013, Patrick Louis <patrick at unixhub.net>
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1.  The author is informed of the use of his/her code. The author does not have to consent to the use; however he/she must be informed.
+    2.  If the author wishes to know when his/her code is being used, it the duty of the author to provide a current email address at the top of his/her code, above or included in the copyright statement.
+    3.  The author can opt out of being contacted, by not providing a form of contact in the copyright statement.
+    4.  If any portion of the author's code is used, credit must be given.
+            a. For example, if the author's code is being modified and/or redistributed in the form of a closed-source binary program, then the end user must still be made somehow aware that the author's work has contributed to that program.
+            b. If the code is being modified and/or redistributed in the form of code to be compiled, then the author's name in the copyright statement is sufficient.
+    5.  The following copyright statement must be included at the beginning of the code, regardless of binary form or source code form.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Except as contained in this notice, the name of a copyright holder shall not
+be used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization of the copyright holder.
+
  * Compile with:
  * clang++ gui.cpp `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs` -lsqlite3 -lcurl -o TEST
  *
@@ -101,7 +133,6 @@ class Manga_GUI {
 		db_manager        db;
 		std::string       current_location;
 		select_dl_manager dl_mngr_callback_data;
-		callback_items    wstruct2;
 		std::vector       <dl_mngr>download_managers;
 		std::vector       <manga_queue_data>queue;
 		callback_q_data   q_c_data;
@@ -354,7 +385,7 @@ Manga_GUI::start_download( void *user_data)
 	callback_items *w = (callback_items*) user_data;
 	std::string download_command = "default";
 	std::string download_location = "";
-	for (int i=0; i< (*w->DL).size() ; i++)
+	for (unsigned int i=0; i< (*w->DL).size() ; i++)
 		if ( (*w->DL)[i].selected) 
 			download_command = (*w->DL)[i].command ;
 	download_location = *w->S1;
@@ -509,7 +540,7 @@ Manga_GUI::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 	}
 
 	std::string selected_dl   = gtk_combo_box_get_active_text ( (GtkComboBox*)data->D1 );
-	for (int i=0; i< (*data->DL).size() ; i++)
+	for (unsigned int i=0; i< (*data->DL).size() ; i++)
 		if ( (*data->DL)[i].name==selected_dl){
 			(*data->DL)[i].selected = true;
 			std::cout<< (*data->DL)[i].name<<" Selected "<<"\n";
@@ -531,7 +562,7 @@ Manga_GUI::add_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 	std::string dl_name = gtk_entry_get_text( (GtkEntry*) data->D2 );
 	std::string command = gtk_entry_get_text( (GtkEntry*) data->D3 );
 	bool problem = false;
-	for (int i=0; i< (*data->DL).size() ; i++)
+	for (unsigned int i=0; i< (*data->DL).size() ; i++)
 		if ( (*data->DL)[i].name==dl_name)
 			problem = true;
 		else if ( (*data->DL)[i].command== command )
@@ -568,7 +599,7 @@ Manga_GUI::del_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 
 	std::string selected_dl = gtk_combo_box_get_active_text ( (GtkComboBox*)data->D1 );
 	/* remove from list */
-	for (int i=0; i< (*data->DL).size() ; i++)
+	for (unsigned int i=0; i< (*data->DL).size() ; i++)
 		if ( (*data->DL)[i].name==selected_dl)
 			(*data->DL).erase( (*data->DL).begin()+i );
 	/* Remove from the combo box */
@@ -626,7 +657,7 @@ Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 	new_to_queue.end_chapter = to_string(end_int);
 	(*data->Q).push_back(new_to_queue);
 
-	for(int i=0; i< (*data->Q).size() ; i++)
+	for(unsigned int i=0; i< (*data->Q).size() ; i++)
 		std::cout<< (*data->Q)[i].manga_name <<"\n";
 
 }
@@ -975,7 +1006,7 @@ Manga_GUI::hpack2_2()
 	gtk_box_pack_start (GTK_BOX (hbox), dl_label, false, false, 10); //box,child,expand,fill,padding
 	dl_manager_combo = gtk_combo_box_new_text ();
 	
-	for(int i=0;i<download_managers.size();i++) {
+	for(unsigned int i=0;i<download_managers.size();i++) {
 		gtk_combo_box_append_text( (GtkComboBox*) dl_manager_combo , 
 			download_managers[i].name.c_str());
 		if ( download_managers[i].selected )
