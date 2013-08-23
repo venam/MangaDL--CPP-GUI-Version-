@@ -386,7 +386,12 @@ mgreader::download_image()
 	}
 	else {
 		int status = 1;
-		std::string command = _external_dl_mgr +" "+ _img + " -o "+ _current_image +".jpg";
+		//replaceAll2( _external_dl_mgr, "[INPUT]", _img);
+		//replaceAll2( _external_dl_mgr, "[OUTPUT]", _current_image+".jpg");
+		std::string command = replaceAll2( _external_dl_mgr, "[INPUT]", _img);
+		command = replaceAll2( command, "[OUTPUT]", _current_image+".jpg");
+		//
+		//std::string command = _external_dl_mgr +" "+ _img + " -o "+ _current_image +".jpg";
 		while (status != 0) {
 			status = system(command.c_str());
 		}
