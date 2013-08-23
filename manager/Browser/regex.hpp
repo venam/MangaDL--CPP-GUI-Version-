@@ -44,6 +44,7 @@ void upper_it(const std::string &income, std::string & outcome);
 bool word_in(const std::string &the_string, const std::string &to_search);
 std::string get_after_equal(std::string html_response, std::string seeking);
 void replaceAll(std::string& str, const std::string& from, const std::string& to);
+std::string replaceAll2(std::string str, const std::string& from, const std::string& to);
 std::string get_between_two_closed(std::string raw_input,std::string seeking);
 void get_between_two(std::string raw_input, std::string seeking, std::vector <std::string> & container);
 void get_after_delimiter(std::string html_response, std::string seeking, std::vector <std::string> &form_container);
@@ -123,6 +124,21 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
     }
 }
 ///=================================================================================///
+
+///=================REPLACE SOMETHING IN A STRING WITH SOMETHING ELSE===============///
+std::string replaceAll2(std::string str, const std::string& from, const std::string& to)
+{
+	if(from.empty())
+		return "";
+	size_t start_pos = 0;
+	while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+	}
+	return str;
+}
+///=================================================================================///
+
 
 ///=================================REMOVE COMMENTS=================================///
 //Remove 1 comments -> return true
