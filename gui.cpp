@@ -975,9 +975,12 @@ Manga_GUI::hpack2_2()
 	gtk_box_pack_start (GTK_BOX (hbox), dl_label, false, false, 10); //box,child,expand,fill,padding
 	dl_manager_combo = gtk_combo_box_new_text ();
 	
-	for(int i=0;i<download_managers.size();i++)
+	for(int i=0;i<download_managers.size();i++) {
 		gtk_combo_box_append_text( (GtkComboBox*) dl_manager_combo , 
 			download_managers[i].name.c_str());
+		if ( download_managers[i].selected )
+			gtk_combo_box_set_active( (GtkComboBox*)  dl_manager_combo, i );
+	}
 
 	gtk_box_pack_start (GTK_BOX (hbox), dl_manager_combo, true, true, 3); //box,child,expand,fill,padding
 
@@ -1045,6 +1048,7 @@ Manga_GUI::hpack2_4()
 	GtkWidget *provider_combo = gtk_combo_box_new_text ();
 
 	gtk_combo_box_append_text( (GtkComboBox*) provider_combo , "mangareader");
+	gtk_combo_box_set_active( (GtkComboBox*) provider_combo, 0);
 
 	gtk_box_pack_start (GTK_BOX (hbox), provider_combo, true, true, 10); //box,child,expand,fill,padding
 
