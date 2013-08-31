@@ -470,7 +470,7 @@ Manga_GUI::start_download( void *user_data)
 	*w->ISDL = 0;
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
-	return 0;
+	return NULL;
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -541,13 +541,13 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 		gtk_dialog_run (GTK_DIALOG (dialog1));
 		gtk_widget_destroy (dialog1);
 		/* reset stuffs */
-		gtk_entry_set_text( (GtkEntry*)w->D2, "");
+		gtk_entry_set_text( (GtkEntry*)w->D2, "  ");
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
-		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.0);
-		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.0);
+		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.001);
+		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.001);
 		gtk_button_set_label( (GtkButton*)w->D7, "Download");
-		gtk_label_set_text( (GtkLabel*) w->D8, "" );
+		gtk_label_set_text( (GtkLabel*) w->D8, "  " );
 		*w->ISDL = 0;
 		if ( *w->CUR_PROV == 0 ) 
 			(*w->DLDER_reader).stop();
