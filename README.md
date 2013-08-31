@@ -1,6 +1,7 @@
 ###MangaDL (CPP-GUI)
 
 A manga downloader with a GTK frontend.
+It currently support mangareader and mangapark.
 
 The program is still in alpha stage and needs to be tested.
 
