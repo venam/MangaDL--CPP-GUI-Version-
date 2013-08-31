@@ -52,12 +52,13 @@ in this Software without prior written authorization of the copyright holder.
 #include <string>
 #include "manager/config.hpp"
 #include "manager/mgreader.hpp"
+#include "manager/mgpark.hpp"
 #include <pthread.h>
 
 struct manga_queue_data {
-std::string manga_name;
-std::string start_chapter;
-std::string end_chapter;
+	std::string manga_name;
+	std::string start_chapter;
+	std::string end_chapter;
 };
 
 typedef struct callback_data {
@@ -72,7 +73,10 @@ typedef struct callback_data {
 	std::string   *S1;
 	std::vector   <dl_mngr>*DL;
 	std::vector   <manga_queue_data>*Q;  /*the queue*/
-	mgreader      *DLDER;
+	mgreader      *DLDER_reader;
+	mgpark        *DLDER_park;
+	GtkWidget     *D9;
+	int           *CUR_PROV;
 	int           *ISDL;
 } callback_items;
 
@@ -127,6 +131,7 @@ class Manga_GUI {
 		GtkWidget         *q_end_entry;
 		GtkWidget         *pbar1;
 		GtkWidget         *pbar2;
+		GtkWidget         *provider_combo;
 		GtkAccelGroup     *accel_group;
 		callback_items    wstruct;
 		callback_items    wstruct_loc;
@@ -137,8 +142,11 @@ class Manga_GUI {
 		std::vector       <manga_queue_data>queue;
 		callback_q_data   q_c_data;
 		callback_q_data   q_combo_data;
-		mgreader          downloader;
+		mgreader          downloader_reader;
+		mgpark            downloader_park;
+
 		int               downloader_state;
+		int               current_provider;
 
 		void draw_main_win              ( void                                              ) ;
 		void hpack_1                    ( void                                              ) ;
@@ -234,7 +242,9 @@ Manga_GUI::Manga_GUI()
 	q_name_entry      = NULL;
 	pbar1             = NULL;
 	pbar2             = NULL;
+	provider_combo    = NULL;
 	downloader_state  = 0;
+	current_provider  = 0;
 	current_location  = db.get_mg_location();
 	download_managers = db.get_dl_managers();
 }
@@ -322,8 +332,10 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 	 * The progress bar2    D6
 	 * the download button  D7
 	 * the stat label       D8
+	 * combo with providers D9
+	 * the current provider CUR_PROV
 	 * state of the dowldr  ISDL 0-nothing 1-downloading 2-paused
-	 * downloader instance  DLDER
+	 * downloader instance  DLDER_*
 	 */ 
 	callback_items *w = (callback_items*) user_data;
 
@@ -339,6 +351,9 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 		gtk_button_set_label( (GtkButton*)w->D7, "Pause");
 		/* download state */
 		*w->ISDL = 1;
+		/* set the provider */
+		*w->CUR_PROV = gtk_combo_box_get_active( (GtkComboBox*) w->D9 );
+
 		/* start the thread that manages the download */
 		pthread_t th_1;
 		pthread_create(&th_1,NULL,&start_download, w);
@@ -349,7 +364,12 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 		gtk_button_set_label( (GtkButton*)w->D7, "Unpause");
 		/* pause state */
 		*w->ISDL = 2;
-		(*w->DLDER).pause_unpause();
+		/* pause the current class instance */
+		if ( *w->CUR_PROV == 0 )
+			(*w->DLDER_reader).pause_unpause();
+		else if (*w->CUR_PROV == 1 )
+			(*w->DLDER_park).pause_unpause();
+
 		return;
 	}
 	/* pause state */
@@ -357,7 +377,12 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 		gtk_button_set_label( (GtkButton*)w->D7, "Pause");
 		/* download state */
 		*w->ISDL = 1;
-		(*w->DLDER).pause_unpause();
+
+		if ( *w->CUR_PROV == 0 )
+			(*w->DLDER_reader).pause_unpause();
+		else if ( *w->CUR_PROV ==1 )
+			(*w->DLDER_park).pause_unpause();
+
 		return;
 	}
 }
@@ -405,20 +430,34 @@ Manga_GUI::start_download( void *user_data)
 		gtk_label_set_text( (GtkLabel*) w->D8, stat_text.c_str() );
 
 		/* init the downloader */
-		(*w->DLDER).init( 
+		if ( *w->CUR_PROV == 0 ) {
+			(*w->DLDER_reader).init( 
+					(*w->Q)[0].manga_name,
+					download_location,
+					download_command,
+					(*w->Q)[0].start_chapter,
+					(*w->Q)[0].end_chapter
+			);
+		}
+		else if ( *w->CUR_PROV ==1 ) {
+			(*w->DLDER_park).init( 
 				(*w->Q)[0].manga_name,
 				download_location,
 				download_command,
 				(*w->Q)[0].start_chapter,
 				(*w->Q)[0].end_chapter
-		);
+			);
+		}
 		/* remove the first value from the queue and the combo box */
 		if ((*w->Q).size()!=0)
 			(*w->Q).erase( (*w->Q).begin() );
 		gtk_combo_box_remove_text( (GtkComboBox*)w->D1, 0);
 
 		/* start the download */
-		(*w->DLDER).run();
+		if ( *w->CUR_PROV == 0)
+			(*w->DLDER_reader).run();
+		else if ( *w->CUR_PROV ==1)
+			(*w->DLDER_park).run();
 	}
 	/* reinit the stuff */
 	gtk_combo_box_set_active( (GtkComboBox*)w->D1, -1);
@@ -430,7 +469,6 @@ Manga_GUI::start_download( void *user_data)
 	gtk_button_set_label( (GtkButton*)w->D7, "Download");
 	gtk_label_set_text( (GtkLabel*) w->D8, "" );
 	*w->ISDL = 0;
-
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
 	return 0;
@@ -446,7 +484,11 @@ Manga_GUI::update_bars( gpointer user_data )
 	/* stop updating when the queue is empty */
 	//if ( (*w->Q).size() == 0 || (*w->DLDER).finished() ||
 	if ( *w->ISDL == 0 ) return false;
-	mg_status stat =  (*w->DLDER).get_status();
+	mg_status stat;
+	if (*w->CUR_PROV ==0 )
+		stat =  (*w->DLDER_reader).get_status();
+	else if (*w->CUR_PROV ==1)
+		stat =  (*w->DLDER_park).get_status();
 	/*
 	 * nb of chapters downloading = stat.end_chapter-stat.start_chapter+1;
 	 * nb of already dlded        = stat.cur_chapter - stat.start_chapter+1;
@@ -485,8 +527,10 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 	 * The progress bar2    D6
 	 * the download button  D7
 	 * the stat label       D8
+	 * the combo providers  D9
+	 * current provider     CUR_PROV
 	 * is downloading atm   ISDL
-	 * downloader instance  DLDER
+	 * downloader instance  DLDER_*
 	 */ 
 	callback_items *w = (callback_items*) user_data;
 	
@@ -507,7 +551,12 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 		gtk_button_set_label( (GtkButton*)w->D7, "Download");
 		gtk_label_set_text( (GtkLabel*) w->D8, "" );
 		*w->ISDL = 0;
-		(*w->DLDER).stop();
+		if ( *w->CUR_PROV == 0 ) 
+			(*w->DLDER_reader).stop();
+		else if (*w->CUR_PROV ==1)
+			(*w->DLDER_park).stop();
+		/* set the current provider to the one that is selected atm */
+		*w->CUR_PROV = gtk_combo_box_get_active( (GtkComboBox*) w->D9);
 	}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -1074,7 +1123,7 @@ Manga_GUI::hpack2_3()
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
-/* List of Providers -- not used for the moment */
+/* List of Providers -- Mangareader (default) and Mangapark */
 void 
 Manga_GUI::hpack2_4()
 {
@@ -1083,18 +1132,13 @@ Manga_GUI::hpack2_4()
 	GtkWidget *label_provider = gtk_label_new("Provider        ");
 	gtk_box_pack_start (GTK_BOX (hbox), label_provider, false, false, 10); //box,child,expand,fill,padding
 
-	GtkWidget *provider_combo = gtk_combo_box_new_text ();
+	provider_combo = gtk_combo_box_new_text ();
 
 	gtk_combo_box_append_text( (GtkComboBox*) provider_combo , "mangareader");
+	gtk_combo_box_append_text( (GtkComboBox*) provider_combo, "mangapark");
 	gtk_combo_box_set_active( (GtkComboBox*) provider_combo, 0);
 
 	gtk_box_pack_start (GTK_BOX (hbox), provider_combo, true, true, 10); //box,child,expand,fill,padding
-
-	GtkWidget *select_button = gtk_button_new();
-	gtk_button_set_label( (GtkButton*)select_button, "Select");
-	gtk_box_pack_start (GTK_BOX (hbox), select_button, false, false, 10);
-
-//	g_signal_connect (select_button, "released", G_CALLBACK (dl_manager_callback), &dl_mngr_callback_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1214,8 +1258,11 @@ Manga_GUI::hpack3_3()
 	wstruct.D6    = pbar2;
 	wstruct.D7    = image_buton;
 	wstruct.D8    = stat_label;
+	wstruct.D9    = provider_combo;
 	wstruct.ISDL  = &downloader_state;
-	wstruct.DLDER = &downloader;
+	wstruct.DLDER_reader = &downloader_reader;
+	wstruct.DLDER_park   = &downloader_park;
+	wstruct.CUR_PROV = &current_provider;
 
 	g_signal_connect (image_buton, "released", G_CALLBACK (download_callback), &wstruct);
 	g_signal_connect (stop_button, "released", G_CALLBACK (stop_callback), &wstruct);
