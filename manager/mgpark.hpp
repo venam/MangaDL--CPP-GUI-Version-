@@ -328,26 +328,25 @@ mgpark::start_downloading()
 		_end = to_string(_chapters.size());
 
 	if ( _end == _start ) {
-		open_new_chapter( atoi(_start.c_str() ) );
+		open_new_chapter( atoi(_start.c_str() )-1 );
 		scrap_images();
 		download_each_imgs();
 		_current_image = "000";
 		_imgs.clear();
-		_flag = true;
-		return;
 	}
-
-	for ( 
-			int i= atoi(_start.c_str())-1; 
-			i < atoi(_end.c_str()); 
-			i++ 
-		) {
-		open_new_chapter(i);
-		scrap_images();
-		download_each_imgs();
-		_current_image = "000";
-		_imgs.clear();
-		increase_chapter();
+	else {
+		for ( 
+				int i= atoi(_start.c_str())-1; 
+				i < atoi(_end.c_str()); 
+				i++ 
+			) {
+			open_new_chapter(i);
+			scrap_images();
+			download_each_imgs();
+			_current_image = "000";
+			_imgs.clear();
+			increase_chapter();
+		}
 	}
 	_flag = true;
 }
