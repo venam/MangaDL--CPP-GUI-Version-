@@ -486,7 +486,7 @@ Manga_GUI::update_bars( gpointer user_data )
 	mg_status stat;
 	if (*w->CUR_PROV ==0 )
 		stat =  (*w->DLDER_reader).get_status();
-	else if (*w->CUR_PROV ==1)
+	else /* if(*w->CUR_PROV ==1) */
 		stat =  (*w->DLDER_park).get_status();
 	/*
 	 * nb of chapters downloading = stat.end_chapter-stat.start_chapter+1;

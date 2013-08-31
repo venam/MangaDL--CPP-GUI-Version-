@@ -273,7 +273,7 @@ void
 mgpark::download_each_imgs()
 {
 	manage_chapters();
-	for (int i=0;i<_imgs.size();i++) {
+	for (unsigned int i=0;i<_imgs.size();i++) {
 		_img = _imgs[i];
 		if ( _flag ) return;
 		while (_paused) {
