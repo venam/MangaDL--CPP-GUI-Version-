@@ -157,7 +157,7 @@ mgpark::get_status()
 	mg_status stat;
 	stat.start_chapter = _START_CHAPT;
 	stat.cur_chapter   = atoi(_start.c_str());
-	stat.end_chapter   = atoi(_end.c_str())+1;
+	stat.end_chapter   = atoi(_end.c_str());
 	stat.cur_page      = _page_counter-1;
 	stat.end_page      = _nb_of_pages+1;
 	stat.finished      = _flag;
@@ -325,7 +325,7 @@ void
 mgpark::start_downloading()
 {
 	if ( atoi(_end.c_str()) > _chapters.size() )
-		_end = to_string(_chapters.size()-1);
+		_end = to_string(_chapters.size());
 
 	if ( _end == _start ) {
 		open_new_chapter( atoi(_start.c_str() ) );
