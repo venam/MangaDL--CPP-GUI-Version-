@@ -36,6 +36,7 @@ in this Software without prior written authorization of the copyright holder.
 
 #include <iostream>
 #include "Browser/Browser.hpp"
+#include "mgstatus.hpp"
 #include <vector>
 #include <sstream>
 #include <map>

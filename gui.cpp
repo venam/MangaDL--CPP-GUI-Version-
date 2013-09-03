@@ -53,6 +53,7 @@ in this Software without prior written authorization of the copyright holder.
 #include "manager/config.hpp"
 #include "manager/mgreader.hpp"
 #include "manager/mgpark.hpp"
+#include "manager/mgstatus.hpp"
 #include <pthread.h>
 
 struct manga_queue_data {

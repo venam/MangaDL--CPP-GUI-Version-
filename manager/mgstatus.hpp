@@ -27,7 +27,8 @@ be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
 *
 */
-
+#ifndef mgstatus
+#define mgstatus
 
 struct mg_status {
 	unsigned int start_chapter;
@@ -38,3 +39,4 @@ struct mg_status {
 	bool finished;
 };
 
+#endif
