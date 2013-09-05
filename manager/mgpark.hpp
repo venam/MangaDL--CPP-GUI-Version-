@@ -168,7 +168,8 @@ mgpark::get_status()
 void
 mgpark::stop()
 {
-	_flag = true;
+	_paused = false;
+	_flag   = true;
 }
 
 void
@@ -273,10 +274,12 @@ mgpark::manage_chapters()
 void
 mgpark::download_each_imgs()
 {
+	if (_flag == true) return;
+	while ( _paused ) sleep(3);
 	manage_chapters();
 	for (unsigned int i=0;i<_imgs.size();i++) {
 		_img = _imgs[i];
-		if ( _flag ) return;
+		if ( _flag == true ) return;
 		while (_paused) {
 			sleep(3);
 		}
@@ -288,7 +291,7 @@ mgpark::download_each_imgs()
 void
 mgpark::download_image()
 {
-	if (_flag) return;
+	if (_flag==true) return;
 	while (_paused) {
 		sleep(3);
 	}
@@ -311,7 +314,7 @@ mgpark::download_image()
 		std::string command = replaceAll2( _external_dl_mgr, "[INPUT]", _img);
 		command = replaceAll2( command, "[OUTPUT]", _current_image+".jpg");
 		while (status != 0) {
-			if (_flag) return;
+			if (_flag == true) return;
 			while (_paused) {
 				sleep(3);
 			}
