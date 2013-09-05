@@ -42,6 +42,7 @@ in this Software without prior written authorization of the copyright holder.
  *  check for 404 errors
  *  Add more providers
  *  Add the Updater to it
+ *  Skip chapter button
  *  Write a Makefile
  *
  */ 
