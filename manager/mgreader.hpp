@@ -372,6 +372,10 @@ mgreader::download_image()
 	else where_to = _mg_location+"/"+_manganame+"/" +_manganame+"-"+_start+"/"+_current_image+".jpg";
 	if ( _external_dl_mgr == "default" ) {
 		do {
+			if (_flag) return;
+			while (_paused) {
+				sleep(3);
+			}
 			br.write_bytes(_current_image+".jpg");
 			br.open( _img,400);
 		}while (br.error());
@@ -381,6 +385,10 @@ mgreader::download_image()
 		std::string command = replaceAll2( _external_dl_mgr, "[INPUT]", _img);
 		command = replaceAll2( command, "[OUTPUT]", _current_image+".jpg");
 		while (status != 0) {
+			if (_flag) return;
+			while (_paused) {
+				sleep(3);
+			}
 			status = system(command.c_str());
 		}
 	}
