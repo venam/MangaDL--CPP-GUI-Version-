@@ -1028,6 +1028,9 @@ Manga_GUI::hpack_7()
 	//	gtk_container_border_width (GTK_CONTAINER(image_buton), 0);
 	gtk_box_pack_start (GTK_BOX (hbox), image_buton, true, true, 10);
 	gtk_box_pack_start (GTK_BOX (hbox), stop_button, true,true, 10);
+
+	gtk_widget_realize (win);
+	gtk_widget_show_all (win);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
