@@ -134,9 +134,11 @@ class Manga_GUI {
 		GtkWidget         *pbar1;
 		GtkWidget         *pbar2;
 		GtkWidget         *provider_combo;
+		GtkWidget         *revert_item;
 		GtkAccelGroup     *accel_group;
 		callback_items    wstruct;
 		callback_items    wstruct_loc;
+		select_dl_manager revert_struct;
 		db_manager        db;
 		std::string       current_location;
 		select_dl_manager dl_mngr_callback_data;
@@ -182,6 +184,7 @@ class Manga_GUI {
 		static void add_dlmngr_callback ( GtkWidget *wid, gpointer user_data                ) ;
 		static void del_dlmngr_callback ( GtkWidget *wid, gpointer user_data                ) ;
 		static void save_cfg_callback   ( GtkWidget *wid, gpointer user_data                ) ;
+		static void rever_callback      ( GtkWidget *wid, gpointer user_data                ) ;
 		static void add_to_q_callback   ( GtkWidget *wid, gpointer user_data                ) ;
 		static void select_q_callback   ( GtkWidget *wid, gpointer user_data                ) ;   
 		static void change_q_callback   ( GtkWidget *wid, gpointer user_data                ) ;
@@ -680,6 +683,31 @@ Manga_GUI::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
+/* Revert the config */
+void
+Manga_GUI::rever_callback(GtkWidget *wid, gpointer user_data)
+{
+	select_dl_manager *data = (select_dl_manager*) user_data;
+	/* revert the location */
+	std::string mg_loc = data->DB.get_mg_location();
+	*data->S1 = mg_loc;
+	mg_loc = "Download Location "+mg_loc;
+	gtk_label_set_text( (GtkLabel*) data->D1, mg_loc.c_str());
+	/* revert the dl managers */
+	for (unsigned int i=0; i<(*data->DL).size(); i++)
+		gtk_combo_box_remove_text( (GtkComboBox*) data->D2, 0);
+	(*data->DL).clear();
+	*data->DL = data->DB.get_dl_managers();
+	for(unsigned int i=0;i<(*data->DL).size();i++) {
+		gtk_combo_box_append_text( (GtkComboBox*) data->D2 , 
+			(*data->DL)[i].name.c_str());
+		if ( (*data->DL)[i].selected )
+			gtk_combo_box_set_active( (GtkComboBox*)  data->D2, i );
+	}
+
+}
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
 /* Add the manga selected to the queue */
 void 
 Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
@@ -850,8 +878,8 @@ Manga_GUI::config_menu_fill(GtkWidget *menubar)
 		GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
 
-	GtkWidget *revert_item = gtk_menu_item_new_with_mnemonic ("_Revert Configs");
-	//	g_signal_connect (revert_item, "activate", G_CALLBACK(about_this), (gpointer) win);
+	revert_item = gtk_menu_item_new_with_mnemonic ("_Revert Configs");
+	
 	gtk_menu_append (GTK_MENU (item_container), revert_item);
 	gtk_widget_add_accelerator (revert_item, "activate", accel_group, 
 		GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
@@ -1266,6 +1294,13 @@ Manga_GUI::hpack3_3()
 	wstruct.DLDER_reader = &downloader_reader;
 	wstruct.DLDER_park   = &downloader_park;
 	wstruct.CUR_PROV = &current_provider;
+
+	revert_struct.S1 = &current_location;
+	revert_struct.D1 = location_text;
+	revert_struct.DB = db;
+	revert_struct.D2 = dl_manager_combo;
+	revert_struct.DL = &download_managers;
+	g_signal_connect (revert_item, "activate", G_CALLBACK(rever_callback), &revert_struct);
 
 	g_signal_connect (image_buton, "released", G_CALLBACK (download_callback), &wstruct);
 	g_signal_connect (stop_button, "released", G_CALLBACK (stop_callback), &wstruct);
