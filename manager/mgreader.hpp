@@ -399,6 +399,7 @@ void
 mgreader::start_downloading()
 {
 	do {
+		if (_flag) return;
 		br.open(_current_page,100);
 	} while(br.error());
 	if ( !not_published() ) {
