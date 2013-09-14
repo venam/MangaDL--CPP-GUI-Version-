@@ -78,6 +78,7 @@ typedef struct callback_data {
 	mgreader      *DLDER_reader;
 	mgpark        *DLDER_park;
 	GtkWidget     *D9;
+	GtkWidget     *D10;
 	int           *CUR_PROV;
 	int           *ISDL;
 } callback_items;
@@ -390,6 +391,7 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 
 		return;
 	}
+	gtk_widget_show_all (w->D10);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -422,8 +424,8 @@ Manga_GUI::start_download( void *user_data)
 
 	g_timeout_add_seconds (3, update_bars, (gpointer) w );
 	/* download until the queue is empty */
-	while ( (*w->Q).size() != 0 ) {
-		gtk_entry_set_text( (GtkEntry*)w->D2, "");
+	while ( (*w->Q).size() > 0 && *w->ISDL == 1) {
+		gtk_entry_set_text( (GtkEntry*)w->D2, " ");
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
 		gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
 		/* initialized the progress bars */
@@ -454,9 +456,10 @@ Manga_GUI::start_download( void *user_data)
 			);
 		}
 		/* remove the first value from the queue and the combo box */
-		if ((*w->Q).size()!=0)
+		if ((*w->Q).size()>0) {
 			(*w->Q).erase( (*w->Q).begin() );
-		gtk_combo_box_remove_text( (GtkComboBox*)w->D1, 0);
+			gtk_combo_box_remove_text( (GtkComboBox*)w->D1, 0);
+		}
 
 		/* start the download */
 		if ( *w->CUR_PROV == 0)
@@ -465,14 +468,16 @@ Manga_GUI::start_download( void *user_data)
 			(*w->DLDER_park).run();
 	}
 	/* reinit the stuff */
+	gtk_button_set_label( (GtkButton*)w->D7, " Download ");
+	gtk_widget_show(w->D7);
 	gtk_entry_set_text( (GtkEntry*)w->D2, " ");
 	gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
 	gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.001);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.001);
-	gtk_button_set_label( (GtkButton*)w->D7, "Download");
 	gtk_label_set_text( (GtkLabel*) w->D8, " " );
 	*w->ISDL = 0;
+	gtk_widget_show_all (w->D10);
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
 	return NULL;
@@ -511,6 +516,8 @@ Manga_GUI::update_bars( gpointer user_data )
 
 	gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D5, chapter_progress);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D6, page_progress);
+	gtk_widget_show_all (w->D10);
+
 	return true;
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -561,6 +568,7 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 		/* set the current provider to the one that is selected atm */
 		*w->CUR_PROV = gtk_combo_box_get_active( (GtkComboBox*) w->D9);
 	}
+	gtk_widget_show(w->D7);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1294,6 +1302,7 @@ Manga_GUI::hpack3_3()
 	wstruct.DLDER_reader = &downloader_reader;
 	wstruct.DLDER_park   = &downloader_park;
 	wstruct.CUR_PROV = &current_provider;
+	wstruct.D10   = win;
 
 	revert_struct.S1 = &current_location;
 	revert_struct.D1 = location_text;
