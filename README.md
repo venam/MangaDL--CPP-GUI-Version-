@@ -3,7 +3,8 @@
 A manga downloader with a GTK frontend.
 It currently support mangareader and mangapark.
 
-The program is still in alpha stage and needs to be tested.
+The program is still in alpha stage and needs to be tested and reviewed.
+The more I am reading about design patterns the more I feel like a lot of my projects needs to be redisgned and this is one of them.
 
 Depends on: libcURL, sqlite3, and GTK.
 
