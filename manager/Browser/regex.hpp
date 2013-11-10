@@ -152,10 +152,10 @@ bool remove_html_comment(std::string & html_response)
         //now we need to check for the end of it
         //... if no end
         //then we remove all after the start of the comment
-        if (position_stop != std::string::npos)
-            html_response.erase (position_start, (position_stop-position_start)+3);
-        else
-            html_response.erase (position_start,html_response.length());
+//        if (position_stop != std::string::npos)
+//            html_response.erase (position_start, (position_stop-position_start)+3);
+//        else
+//            html_response.erase (position_start,html_response.length());
         return true;
     }
     //couldn't find any <!-- so no more comments in the html_response

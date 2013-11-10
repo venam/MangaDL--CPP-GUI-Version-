@@ -168,8 +168,8 @@ Browser::Browser()
     direct_form_post_        = false;
     writing_bytes            = false;
     timeout                  = 30;
-    fetching_links           = true;
-    fetching_forms           = true;
+    fetching_links           = false;
+    fetching_forms           = false;
 
     //get a handler
     curl_global_cleanup();
@@ -314,8 +314,10 @@ void Browser::open(std::string url, int usertimeout=20,bool save_history=true)
     //because we don't want to parse bytes for forms
     else
     {
-        if(fetching_forms == true)
+        if(fetching_forms == true) 
+        {
             forms.initialize(html_response);
+        }
         if(fetching_links == true)
         {
             links.getlinks(html_response);
