@@ -18,4 +18,8 @@ Compile with : <pre>g++ gui.cpp -O3 `pkg-config gtk+-2.0 --cflags` `pkg-config g
 ![Configs](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/configs.png)
 ![Queue](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/queue.png)
 
+Here's the wannabe new design
+
+![New Design](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/new_design_pattern.png)
+
 PS: You should read your mangas with mcomix or comix.
