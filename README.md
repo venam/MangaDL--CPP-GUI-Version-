@@ -20,6 +20,6 @@ Compile with : <pre>g++ gui.cpp -O3 `pkg-config gtk+-2.0 --cflags` `pkg-config g
 
 Here's the wannabe new design
 
-![NewDesign](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/new_design_pattern.png)
+![New Design](https://github.com/venam/MangaDL--CPP-GUI-Version-/raw/testing/new_design_pattern.png)
 
 PS: You should read your mangas with mcomix or comix.
