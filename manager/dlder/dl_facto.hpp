@@ -27,16 +27,11 @@ be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
 *
 */
-#ifndef mgstatus
-#define mgstatus
 
-struct mg_status {
-	unsigned int start_chapter;
-	unsigned int cur_chapter;
-	unsigned int end_chapter;
-	unsigned int cur_page;
-	unsigned int end_page;
-	bool finished;
+class dl_facto {
+	private:
+	public:
 };
 
-#endif
+
+

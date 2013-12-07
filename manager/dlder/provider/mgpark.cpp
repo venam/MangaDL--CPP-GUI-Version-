@@ -34,124 +34,37 @@ in this Software without prior written authorization of the copyright holder.
 *
 */
 
-#include <iostream>
-#include "Browser/Browser.hpp"
-#include <vector>
-#include <sstream>
-#include <map>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-
-struct mg_status {
-	unsigned int start_chapter;
-	unsigned int cur_chapter;
-	unsigned int end_chapter;
-	unsigned int cur_page;
-	unsigned int end_page;
-	bool finished;
-};
-
-class mgpark {
-	public:
-		mgpark(std::string manganame, std::string mg_location,
-				std::string external_dl_mgr,std::string start, std::string end);
-		mgpark();
-		~mgpark();
-		void run();
-		mg_status get_status();
-		void pause_unpause();
-		bool finished();
-		void stop();
-		void init(std::string manganame, std::string mg_location,
-			std::string external_dl_mgr,std::string start, std::string end);
-	protected:
-	private:
-		//vars
-		Browser br;
-		std::vector  <std::string>_imgs;
-		std::vector  <std::string>_chapters;
-		std::string  _manganame;
-		std::string  _mg_location;
-		std::string  _external_dl_mgr;
-		std::string  _img;
-		std::string  _next_link;
-		std::string  _current_image;
-		std::string  _start;
-		std::string  _end;
-		bool         _flag;
-		bool         _paused;
-		unsigned int _START_CHAPT;
-		unsigned int _nb_of_pages;
-		unsigned int _page_counter;
-		//foos
-		void scrap_page();
-		void scrap_images();
-		void create_browser();
-		void increase_current();
-		void increase_chapter();
-		void manage_chapters();
-		void download_image();
-		void download_each_imgs();
-		void start_downloading();
-		void open_new_chapter(int chapt);
-		void open_first_page();
-};
+#include "mgpark.hpp"
 
 mgpark::mgpark(std::string manganame, std::string mg_location,
 	std::string external_dl_mgr,std::string start, std::string end)
+	: dlder(manganame, mg_location, external_dl_mgr, start, end)
 {
-	_manganame       = manganame;
-	_mg_location     = mg_location;
-	_external_dl_mgr = external_dl_mgr;
-	_start           = start;
-	_START_CHAPT     = atoi(_start.c_str());
-	_end             = end;
-	_current_image   = "000";
-	_img             = "";
-	_next_link       = "";
-	_nb_of_pages     = 0;
-	_page_counter    = 2;
-	_flag            = false;
-	_paused          = false;
 }
 
 
 mgpark::mgpark()
+	: dlder()
 {
-	_manganame       = "";
-	_mg_location     = "";
-	_external_dl_mgr = "";
-	_start           = "";
-	_START_CHAPT     = atoi(_start.c_str());
-	_end             = "";
-	_current_image   = "000";
-	_img             = "";
-	_next_link       = "";
-	_nb_of_pages     = 0;
-	_page_counter    = 2;
-	_flag            = false;
-	_paused          = false;
 }
 
 void
 mgpark::init(std::string manganame, std::string mg_location,
 	std::string external_dl_mgr,std::string start, std::string end)
 {
-	_manganame       = manganame;
-	_mg_location     = mg_location;
-	_external_dl_mgr = external_dl_mgr;
-	_start           = start;
-	_START_CHAPT     = atoi(_start.c_str());
-	_end             = end;
-	_current_image   = "000";
-	_img             = "";
-	_next_link       = "";
-	_nb_of_pages     = 0;
-	_page_counter    = 2;
-	_flag            = false;
-	_paused          = false;
+	dlder_manganame           = manganame;
+	dlder_mg_location         = mg_location;
+	dlder_external_dl_mgr     = external_dl_mgr;
+	dlder_start                = start;
+	dlder_end                 = end;
+	dlder_url_img             = "";
+	dlder_img                 = "000";
+	dlder_nb_of_chapter       = 0;
+	dlder_current_chapter     = atoi(start.c_str());
+	dlder_nb_of_pages         = 0;
+	dlder_current_page        = 1;
+	dlder_paused_flag         = false;
+	dlder_stop_flag           = false;
 }
 
 
@@ -163,209 +76,172 @@ mg_status
 mgpark::get_status()
 {
 	mg_status stat;
-	stat.start_chapter = _START_CHAPT;
-	stat.cur_chapter   = atoi(_start.c_str());
-	stat.end_chapter   = atoi(_end.c_str());
-	stat.cur_page      = _page_counter-1;
-	stat.end_page      = _nb_of_pages+1;
-	stat.finished      = _flag;
+	stat.start_chapter = atoi(dlder_start.c_str());
+	stat.cur_chapter   = dlder_current_chapter;
+	stat.end_chapter   = atoi(dlder_end.c_str());
+	stat.cur_page      = dlder_current_page-1;
+	stat.end_page      = dlder_nb_of_pages;
+	stat.finished      = dlder_stop_flag;
 	return stat;
 }
 
 void
 mgpark::stop()
 {
-	_flag = true;
+	dlder_stop_flag = true;
 }
 
 void
 mgpark::pause_unpause()
 {
-	if (_paused) _paused = false;
-	else         _paused = true;
+	dlder_paused_flag = dlder_paused_flag? false: true;
 }
 
 bool
 mgpark::finished()
 {
-	return _flag;
-}
-
-void
-mgpark::create_browser()
-{
-	br.adduseragent("Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1");
-	std::string header[2] = {"Referer","http://www.mangareader.net"};
-	br.addheaders(header);
-	br.set_handle_redirect(false);
-	br.set_handle_gzip(false);
-	br.set_handle_ssl(false);
-	br.set_verbose(false);
-	br.fetch_links(false);
-	br.fetch_forms(false);
+	return dlder_stop_flag;
 }
 
 void 
 mgpark::increase_current()
 {
-	_current_image = to_string(atoi(_current_image.c_str())+1);
-	if (_current_image.size() == 1)
-		_current_image = "00"+_current_image;
-	else if (_current_image.size() == 2)
-		_current_image = "0"+_current_image;
-	_page_counter++;
+	dlder_img   = to_string(atoi(dlder_img.c_str())+1);
+	if (dlder_img.size() == 1) {
+		dlder_img = "00"+dlder_img;
+	}
+	else if (dlder_img.size() == 2) {
+		dlder_img = "0"+dlder_img;
+	}
+	else {
+	}
+	dlder_current_page++;
 }
 
 void
 mgpark::increase_chapter()
 {
-	_nb_of_pages   = 0;
-	_page_counter  = 1;
-	_current_image = "000";
-	std::ostringstream o;
-	_start         = to_string( atoi(_start.c_str())+1);
-	_page_counter++;
+	dlder_nb_of_pages     = 0;
+	dlder_current_page    = 1;
+	dlder_img             = "000";
+	dlder_current_chapter = dlder_current_chapter+1;
+	dlder_current_page++;
 }
 
 void
 mgpark::scrap_page()
 {
-	std::vector<std::string> response_lines = split(br.response(), '\n');
+	std::vector<std::string> response_lines = split(dlder_br.response(), '\n');
 	//loop backward so there will be no need to reverse the vector later on
 	for (int i=response_lines.size()-1; i>=0;i--) {
 		//a new chapter has been found
 		if (word_in(response_lines[i],">All</a>")) {
 			std::vector<std::string> url_split = split(response_lines[i], '\"');
 			std::string url = url_split[1];
-			int manga_name_place = url.find(_manganame);
-			std::string tmp = url.substr(manga_name_place+_manganame.size(),url.size()-1);
-			if ( !word_in( tmp,"-" ) || !word_in( tmp, "+") || !word_in( tmp, ".") )
-				_chapters.push_back( "http://www.mangapark.com"+ url);
+			int manga_name_place = url.find(dlder_manganame);
+			std::string tmp = url.substr(manga_name_place+dlder_manganame.size(),url.size()-1);
+			if ( !word_in( tmp,"-" ) || !word_in( tmp, "+") || !word_in( tmp, ".") ) {
+				mgpark_chapters.push_back( "http://www.mangapark.com"+ url);
+			}
+			else {
+			}
 		}
 	}
-	if ( _chapters.size() == 0 )
+	if ( mgpark_chapters.size() == 0 ) {
 		std::cout<<"No Chapter for this manga\n";
+	}
+	else {
+		//everything went well
+	}
 }
 
 void
 mgpark::scrap_images()
 {
 	std::vector<std::string> response_lines;
-	response_lines = split(br.response(), '\n');
+	response_lines = split(dlder_br.response(), '\n');
 	for (unsigned int i=0;i<response_lines.size();i++) {
 		//this line contains an image
 		if (word_in(response_lines[i], "<em><a target=\"_blank\"") ) {
 			std::vector<std::string> splitter = split(response_lines[i], '\"');
-			_imgs.push_back(splitter[3]);
+			mgpark_imgs.push_back(splitter[3]);
+		}
+		else {
+			//not found ~~ weird
 		}
 	}
-	_nb_of_pages = _imgs.size() -1;
-}
-
-void 
-mgpark::manage_chapters()
-{
-	if (0 != access( _mg_location.c_str() , W_OK & R_OK ))
-		mkdir( _mg_location.c_str() , S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	chdir(_mg_location.c_str());
-	if (0 != access( _manganame.c_str() , W_OK & R_OK ))
-		mkdir( _manganame.c_str() , S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	chdir(_manganame.c_str());
-	std::string chapter_dir = _manganame+"-"+_start;
-	if (0 != access(chapter_dir.c_str(), W_OK & R_OK ))
-		mkdir( chapter_dir.c_str() , S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	chdir(chapter_dir.c_str());
+	dlder_nb_of_pages = mgpark_imgs.size() -1;
 }
 
 void
 mgpark::download_each_imgs()
 {
 	manage_chapters();
-	for (int i=0;i<_imgs.size();i++) {
-		_img = _imgs[i];
-		if ( _flag ) return;
-		while (_paused) {
-			sleep(3);
+	for (int i=0;i<mgpark_imgs.size();i++) {
+		dlder_url_img = mgpark_imgs[i];
+		if (dlder_stop_flag ) {
+			return;
 		}
-		download_image();
-		increase_current();
-	}
-}
-
-void
-mgpark::download_image()
-{
-	if (_flag) return;
-	while (_paused) {
-		sleep(3);
-	}
-	std::string where_to;
-	if (_mg_location[_mg_location.size()-1]=='/')
-		 where_to = _mg_location.substr(0,_mg_location.size()-2)+"/"+_manganame+"/" +_manganame+"-"+_start+"/"+_current_image+".jpg";
-	else where_to = _mg_location+"/"+_manganame+"/" +_manganame+"-"+_start+"/"+_current_image+".jpg";
-	if ( _external_dl_mgr == "default" ) {
-		do {
-			br.write_bytes(_current_image+".jpg");
-			br.open( _img,400);
-		}while (br.error());
-	}
-	else {
-		int status = 1;
-		std::string command = replaceAll2( _external_dl_mgr, "[INPUT]", _img);
-		command = replaceAll2( command, "[OUTPUT]", _current_image+".jpg");
-		while (status != 0) {
-			status = system(command.c_str());
+		else {
+			while (dlder_paused_flag) {
+				sleep(3);
+			}
+			download_image();
+			increase_current();
 		}
 	}
-	std::cout<< where_to << "\n";
 }
 
 void
 mgpark::open_new_chapter(int chapt)
 {
 	do {
-		std::cout<<_chapters[chapt]<<"\n";
-		br.open(_chapters[chapt]);
-	} while( br.error() );
+		std::cout<<mgpark_chapters[chapt]<<"\n";
+		dlder_br.open(mgpark_chapters[chapt],20);
+	} while( dlder_br.error() );
 }
 
 void
 mgpark::start_downloading()
 {
-	if ( atoi(_end.c_str()) > _chapters.size() )
-		_end = to_string(_chapters.size()-1);
-
-	if ( _end == _start ) {
-		open_new_chapter( atoi(_start.c_str() ) );
-		scrap_images();
-		download_each_imgs();
-		_current_image = "000";
-		_imgs.clear();
-		_flag = true;
-		return;
+	if ( atoi(dlder_end.c_str()) > mgpark_chapters.size() ) {
+		dlder_end = to_string(mgpark_chapters.size()-1);
+	}
+	else {
 	}
 
-	for ( 
-			int i= atoi(_start.c_str())-1; 
-			i < atoi(_end.c_str()); 
-			i++ 
-		) {
-		open_new_chapter(i);
+	if ( dlder_end == dlder_start ) {
+		open_new_chapter( atoi(dlder_start.c_str() ) );
 		scrap_images();
 		download_each_imgs();
-		_current_image = "000";
-		_imgs.clear();
-		increase_chapter();
+		dlder_img = "000";
+		mgpark_imgs.clear();
+		dlder_stop_flag = true;
 	}
-	_flag = true;
+
+	else {
+		for ( 
+				int i= atoi(dlder_start.c_str())-1; 
+				i < atoi(dlder_end.c_str()); 
+				i++ 
+			) {
+			open_new_chapter(i);
+			scrap_images();
+			download_each_imgs();
+			dlder_img = "000";
+			mgpark_imgs.clear();
+			increase_chapter();
+		}
+		dlder_stop_flag = true;
+	}
 }
 
 void
 mgpark::open_first_page()
 {
 	do {
-		br.open("http://www.mangapark.com/manga/"+_manganame,100);
-	} while(br.error());
+		dlder_br.open("http://www.mangapark.com/manga/"+dlder_manganame,100);
+	} while(dlder_br.error());
 }
 
 void
@@ -377,40 +253,3 @@ mgpark::run()
 	std::cout<< "[*] Finished all the downloads\nEnjoy Your Reading!\n";
 }
 
-void *
-print_stat(void *dl)
-{
-	mgpark *dl_ = (mgpark* )dl;
-	while (!dl_->finished()) {
-		mg_status stat =  dl_->get_status();
-		std::cout << 
-			"start:" << stat.start_chapter << "\n" <<
-			"cur  :" << stat.cur_chapter   << "\n" <<
-			"end  :" << stat.end_chapter   << "\n" <<
-			"c_pag:" << stat.cur_page      << "\n" <<
-			"e_pag:" << stat.end_page      << "\n" <<
-			"OVER :" << stat.finished      << "\n" ;
-		sleep(5);
-	}
-	return NULL;
-}
-
-///------------------------TEST CLASS IN MAIN HERE-------------------------///
-int main()
-{
-	std::string man,loc,ext,st,en;
-	std::cout << "Enter the manga name        => ";
-	std::cin  >> man;
-	std::cout << "Enter the Starting chapter  => ";
-	std::cin  >> st;
-	std::cout << "Enter the Finishing chapter => ";
-	std::cin  >> en;
-	mgpark downloader(man,"/home/raptor/mangaDL","axel [INPUT] -o [OUTPUT] ",st,en);
-//	mgpark downloader("BLAME", "/home/raptor/manga_test_cpp2","axel -aS [INPUT] -o [OUTPUT] ","11","12");
-	pthread_t th_1;
-	pthread_create(&th_1,NULL,&print_stat,&downloader);
-	downloader.run();
-	pthread_join(th_1,NULL);
-	return 0;
-}
-///------------------------------------------------------------------------///

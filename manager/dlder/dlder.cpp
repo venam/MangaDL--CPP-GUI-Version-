@@ -73,7 +73,8 @@ dlder::~dlder()
 
 
 ///================================initialize the browser===========================///
-void dlder::create_browser()
+void 
+dlder::create_browser()
 {
 	dlder_br.add_useragent("Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1");
 	std::string header[2] = {"Referer","http://www.mangareader.net"};
@@ -87,7 +88,8 @@ void dlder::create_browser()
 
 
 ///===========Moves to the appropriate dir (creating it if needed)==================///
-void dlder::manage_chapters()
+void 
+dlder::manage_chapters()
 {
 	if (0 != access( dlder_mg_location.c_str() , W_OK & R_OK )) {
 		mkdir( dlder_mg_location.c_str() , S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -113,7 +115,8 @@ void dlder::manage_chapters()
 
 
 ///=================================================================================///
-void dlder::download_image()
+void 
+dlder::download_image()
 {
 	if (dlder_stop_flag) {
 		return;
@@ -157,7 +160,8 @@ void dlder::download_image()
 
 
 ///=================================================================================///
-std::string dlder::command_converter()
+std::string 
+dlder::command_converter()
 {
 	std::string command = replaceAll2( dlder_external_dl_mgr, "[INPUT]", dlder_url_img);
 	command             = replaceAll2( command, "[OUTPUT]", dlder_img+".jpg");
