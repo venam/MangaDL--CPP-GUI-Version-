@@ -56,6 +56,10 @@ mgreader::mgreader() : dlder()
 {
 	fill_in_resolver();
 	mgreader_current_page_url    ="http://www.mangareader.net/";
+	//vars
+	mgreader_next_link        = "";
+
+
 }
 ///=================================================================================///
 
@@ -63,22 +67,11 @@ mgreader::mgreader() : dlder()
 ///=================================================================================///
 void
 mgreader::init(std::string manganame, std::string mg_location,
-	std::string external_dl_mgr,std::string start, std::string end)
+	std::string external_dl_mgr,std::string start, std::string end) 
 {
-	dlder_manganame           = manganame;
-	dlder_mg_location         = mg_location;
-	dlder_external_dl_mgr     = external_dl_mgr;
-	dlder_start                = start;
-	dlder_end                 = end;
-	dlder_url_img             = "";
-	dlder_img                 = "000";
-	dlder_nb_of_chapter       = 0;
-	dlder_current_chapter     = atoi(start.c_str());
-	dlder_nb_of_pages         = 0;
-	dlder_current_page        = 1;
-	dlder_paused_flag         = false;
-	dlder_stop_flag           = false;
-	mgreader_current_page_url = "http://www.mangareader.net/"+ dlder_manganame+"/"+dlder_start +"/";
+	dlder::init(manganame,mg_location,external_dl_mgr, start, end);
+	mgreader_current_page_url     ="http://www.mangareader.net/"+ dlder_manganame+"/"+dlder_start +"/";
+	std::cout<<mgreader_current_page_url<<"\n";
 }
 ///=================================================================================///
 
@@ -287,6 +280,8 @@ mgreader::scrap_page()
 			unsigned int index  = response_lines[i].find("src=\"",0);
 			unsigned int index2 = response_lines[i].find("\" alt",index+6);
 			dlder_url_img = response_lines[i].substr(index+5,index2-index-5);
+			std::cout<<"-----";
+			std::cout<<dlder_url_img<<"\n";
 			break;
 		}
 		else {

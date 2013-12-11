@@ -28,26 +28,67 @@ in this Software without prior written authorization of the copyright holder.
 *
 */
 
-#ifndef DL_FACTO_INCLUDED
-#define DL_FACTO_INCLUDED
 
-#include "dlder.hpp"
-#include "provider/mgreader.hpp"
-#include "provider/mgpark.hpp"
-#include <vector>
-#include <string>
+#include "dl_facto.hpp"
 
-class dl_facto {
-	private:
-		dlder* dl_facto_dlder;
-		std::vector<std::string> dl_facto_all_providers;
 
-	public:
-		dl_facto();
-		~dl_facto();
-		dlder* get_provider(std::string provider);
-		std::vector<std::string> show_providers();
-};
+///=================================================================================///
+dl_facto::dl_facto()
+{
+	dl_facto_dlder = NULL;
+	/* all the available providers */
+	dl_facto_all_providers.push_back("mgreader");
+	dl_facto_all_providers.push_back("mgpark");
+}
+///=================================================================================///
 
-#endif
+
+///=================================================================================///
+dl_facto::~dl_facto()
+{
+	if (dl_facto_dlder != NULL) {
+		delete dl_facto_dlder;
+	}
+	else {
+		// dl_facto_dlder is already empty
+	}
+
+}
+///=================================================================================///
+
+
+///=================================================================================///
+dlder* 
+dl_facto::get_provider(std::string provider)
+{
+	if (dl_facto_dlder != NULL) {
+		delete dl_facto_dlder;
+	}
+	else {
+		// dl_facto_dlder is already empty
+	}
+
+	if (provider == "mgreader") {
+		dl_facto_dlder = new mgreader();
+	}
+	else if (provider == "mgpark" ) {
+		dl_facto_dlder = new mgpark();
+	}
+	else {
+		std::cerr<<"Provider not found, using mgreader instead";
+	}
+
+	return dl_facto_dlder;
+}
+///=================================================================================///
+
+
+///=================================================================================///
+std::vector<std::string>
+dl_facto::show_providers()
+{
+	return dl_facto_all_providers;
+}
+///=================================================================================///
+
 

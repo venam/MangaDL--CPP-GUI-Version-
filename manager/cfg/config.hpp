@@ -44,11 +44,25 @@ in this Software without prior written authorization of the copyright holder.
  * contains the current provider "mangareader"
  *
  * TODO:
- *     Language for the external download manager.
  *     replaces [INPUT] by the input file name and [OUTPUT] by the output name
  *
  */
-#include "config.cpp"
+
+
+#ifndef CONFIG_HPP_INCLUDED
+#define CONFIG_HPP_INCLUDED
+
+
+#include <stdio.h>
+#include <sqlite3.h>
+#include <string>
+#include <string.h>
+#include <vector>
+#include <iostream>
+
+#define DB_NAME "manager/cfg/config.db"
+#define DEFAULT_LOC ""
+
 
 struct mg_list {
 	std::string mgname;
@@ -101,4 +115,6 @@ class db_manager {
 		void set_queue(std::vector<manga_queue_data> user_queue);
 		std::vector<manga_queue_data> get_queue();
 };
+
+#endif
 

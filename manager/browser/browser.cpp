@@ -104,7 +104,9 @@ browser::init()
 
 	struct curl_slist *headers  = NULL;
 	headers                     = curl_slist_append(headers, "Accept:");
-	curl_slist_free_all(headers);
+	if (headers) {
+		curl_slist_free_all(headers);
+	}
 	curl_easy_reset(br_curl);
 }
 ///=================================================================================///
@@ -116,7 +118,9 @@ browser::clean()
 {
 	struct curl_slist *headers	= NULL;
 	headers = curl_slist_append(headers, "Accept:");
-	curl_slist_free_all(headers);
+	if (headers) {
+		curl_slist_free_all(headers);
+	}
 	br_html_response = "";
 	br_history.clear();
 	init();
@@ -650,8 +654,8 @@ browser::head_request(bool user_allow)
 void 
 browser::history()
 {
-	for(unsigned int ii=0;ii<br_history.size();ii++) {
-		std::cout<<br_history[ii]<<"\n";
+	for(auto ii : br_history) {
+		std::cout<<ii<<"\n";
 	}
 }
 ///=================================================================================///

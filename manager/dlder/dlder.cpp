@@ -72,6 +72,28 @@ dlder::~dlder()
 ///=================================================================================///
 
 
+///=================================================================================///
+void
+dlder::init(std::string manganame, std::string mg_location,
+	std::string external_dl_mgr,std::string start, std::string end)
+{
+	dlder_manganame           = manganame;
+	dlder_mg_location         = mg_location;
+	dlder_external_dl_mgr     = external_dl_mgr;
+	dlder_start                = start;
+	dlder_end                 = end;
+	dlder_url_img             = "";
+	dlder_img                 = "000";
+	dlder_nb_of_chapter       = 0;
+	dlder_current_chapter     = atoi(start.c_str());
+	dlder_nb_of_pages         = 0;
+	dlder_current_page        = 1;
+	dlder_paused_flag         = false;
+	dlder_stop_flag           = false;
+}
+///=================================================================================///
+
+
 ///================================initialize the browser===========================///
 void 
 dlder::create_browser()

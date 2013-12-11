@@ -50,20 +50,8 @@ in this Software without prior written authorization of the copyright holder.
  * IMPLEMENTATION
  */
 
+#include "config.hpp"
 
-#ifndef CONFIG_HPP_INCLUDED
-#define CONFIG_HPP_INCLUDED
-
-
-#include <stdio.h>
-#include <sqlite3.h>
-#include <string>
-#include <string.h>
-#include <vector>
-#include <iostream>
-
-#define DB_NAME "manager/cfg/config.db"
-#define DEFAULT_LOC ""
 
 ///================constructor=======================================================///
 db_manager::db_manager()
@@ -272,12 +260,12 @@ void
 db_manager::update_dl_manager(const std::vector <dl_mngr> new_managers)
 {
 	this->exec("DELETE FROM dl_managers;");
-	for (unsigned int i=0; i< new_managers.size(); i++) {
+	for (auto  i: new_managers) {
 		this->exec(
 				"INSERT INTO dl_managers VALUES (\""+
-				new_managers[i].name+"\",\""+
-				new_managers[i].command+"\","+
-				( new_managers[i].selected? "1);" : "0);")
+				i.name+"\",\""+
+				i.command+"\","+
+				( i.selected? "1);" : "0);")
 			);
 	}
 }
@@ -337,7 +325,8 @@ db_manager::get_mg_list()
 
 
 ///==================================================================================///
-void set_current_location(std::string user_current_location)
+void 
+db_manager::set_current_location(std::string user_current_location)
 {
 	this->cfg_current_location = user_current_location;
 }
@@ -345,7 +334,8 @@ void set_current_location(std::string user_current_location)
 
 
 ///==================================================================================///
-std::string get_current_location()
+std::string 
+db_manager::get_current_location()
 {
 	return this->cfg_current_location;
 }
@@ -353,7 +343,8 @@ std::string get_current_location()
 
 
 ///==================================================================================///
-void set_download_managers(std::vector<dl_mngr> user_download_managers)
+void 
+db_manager::set_download_managers(std::vector<dl_mngr> user_download_managers)
 {
 	this->cfg_download_managers = user_download_managers;
 }
@@ -361,7 +352,8 @@ void set_download_managers(std::vector<dl_mngr> user_download_managers)
 
 
 ///==================================================================================///
-std::vector<dl_mngr> get_download_managers()
+std::vector<dl_mngr> 
+db_manager::get_download_managers()
 {
 	return this->cfg_download_managers;
 }
@@ -369,7 +361,8 @@ std::vector<dl_mngr> get_download_managers()
 
 
 ///==================================================================================///
-void set_queue(std::vector<manga_queue_data> user_queue)
+void 
+db_manager::set_queue(std::vector<manga_queue_data> user_queue)
 {
 	this->cfg_queue = user_queue;
 }
@@ -377,7 +370,8 @@ void set_queue(std::vector<manga_queue_data> user_queue)
 
 
 ///==================================================================================///
-std::vector<manga_queue_data> get_queue()
+std::vector<manga_queue_data> 
+db_manager::get_queue()
 {
 	return this->cfg_queue;
 }
@@ -395,16 +389,14 @@ db_manager::exec_callback(
 	for(int i=0; i<argc; i+=2){
 		std::cout<< azColName[i] 
 			<<" = "
-			<< argv[i]? argv[i] :"NULL";
+			<< (argv[i]? argv[i] :"NULL");
 		std::cout<< azColName[i+1]
 			<<" = "
-			<< arv[i+1] ? argv[i+1] : "NULL"
+			<< (argv[i+1] ? argv[i+1] : "NULL")
 			<<"\n";
 	}
 	std::cout<<"\n";
 	return 0;
 }
 ///==================================================================================///
-
-#endif
 

@@ -23,10 +23,10 @@ print_stat(void *dl)
 int main()
 {
 	std::string man;
-	std::sting  loc;
+	std::string  loc;
 	std::string ext;
-	std::sting  st;
-	std::sting  en;
+	std::string  st;
+	std::string  en;
 	std::cout << "Enter the manga name        => ";
 	std::cin  >> man;
 	std::cout << "Enter the Starting chapter  => ";
