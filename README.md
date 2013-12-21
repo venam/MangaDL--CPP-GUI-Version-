@@ -3,8 +3,7 @@
 A manga downloader with a GTK frontend.
 It currently support mangareader and mangapark.
 
-The program is still in alpha stage and needs to be tested and reviewed.
-The more I am reading about design patterns the more I feel like a lot of my projects needs to be redisgned and this is one of them.
+This branch will make the mangaDL pluggable and more stable.
 
 Depends on: libcURL, sqlite3, and GTK.
 
@@ -12,7 +11,7 @@ How to add an external DL manager:
 `[OUTPUT]` represent the output
 `[INPUT]` represent the input
 
-Compile with : <pre>g++ gui.cpp -O3 `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs` -lsqlite3 -lcurl -o MangaDL</pre>
+Compile with : <pre>make</pre>
 
 ![Main](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/main.png)
 ![Configs](https://raw.github.com/venam/MangaDL--CPP-GUI-Version-/master/configs.png)
