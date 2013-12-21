@@ -38,43 +38,139 @@ in this Software without prior written authorization of the copyright holder.
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 Manga_GUI::~Manga_GUI()
 {
+	delete gui_config;
+	delete downloader;
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 /* Initialize the GtkWidget Elements */
-Manga_GUI::Manga_GUI() 
+Manga_GUI::Manga_GUI(int argc, char *argv[]) 
 {
-	stop_button       = NULL;
-	win               = NULL;
-	vbox              = NULL;
-	vbox2             = NULL;
-	hbox              = NULL;
-	label             = NULL;
-	image_buton       = NULL;
-	add_queue_buton   = NULL;
-	imbox             = NULL;
-	wheel             = NULL;
-	wheel2            = NULL;
-	texta             = NULL;
-	location_text     = NULL;
-	dl_manager_combo  = NULL;
-	name_dl           = NULL;
-	stat_label        = NULL;
-	vbox3             = NULL;
-	command_dl        = NULL;
-	queue_combo       = NULL;
-	q_end_entry       = NULL;
-	q_start_entry     = NULL;
-	q_name_entry      = NULL;
-	pbar1             = NULL;
-	pbar2             = NULL;
-	provider_combo    = NULL;
-	downloader_state  = 0;
-	current_provider  = 0;
-	current_location  = db.get_mg_location();
-	download_managers = db.get_dl_managers();
+	/* Initialize GTK+ */
+	g_log_set_handler ("Gtk", G_LOG_LEVEL_DEBUG, (GLogFunc) gtk_false, NULL);
+	gtk_init (&argc, &argv);
+	g_log_set_handler ("Gtk", G_LOG_LEVEL_DEBUG, g_log_default_handler, NULL);
+
+
+	/* the main win */
+	win                  = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	/* vbox -- contains 7 hbox */
+	vbox                 = gtk_vbox_new (false,0);
+	vbox2                = gtk_vbox_new(false,0);
+	vbox3                = gtk_vbox_new(false,0);
+
+	mainvbox             = gtk_vbox_new(false,0);
+	hbox                 = gtk_hbox_new (false,10);
+	stop_button          = gtk_button_new_with_label("Stop");
+	/* Create a label for the button */
+	label                = gtk_label_new ("");
+
+	stat_label           = gtk_label_new ("");
+	image_buton          = gtk_button_new();
+	add_queue_buton      = gtk_button_new();
+
+	// imbox;
+	wheel                = gtk_spin_button_new_with_range(1,2000,1);
+	wheel2               = gtk_spin_button_new_with_range(1,2000,1);
+	texta                = gtk_entry_new();
+	location_text        = gtk_label_new( "" );
+	dl_manager_combo     = gtk_combo_box_new_text ();
+	name_dl              = gtk_entry_new();
+	command_dl           = gtk_entry_new();
+	queue_combo          = gtk_combo_box_text_new();
+	q_name_entry         = gtk_entry_new();
+	q_start_entry        = gtk_spin_button_new_with_range(1,2000,1);
+	q_end_entry          = gtk_spin_button_new_with_range(1,2000,1);
+	pbar1                = gtk_progress_bar_new();
+	pbar2                = gtk_progress_bar_new();
+	provider_combo       = gtk_combo_box_new_text ();
+	revert_item          = gtk_menu_item_new_with_mnemonic ("_Revert Configs");
+	accel_group          = gtk_accel_group_new ();
+
+	gui_config           = new config();
+	//queue              = ;
+	//factory
+	
+	downloader           = NULL;
+
+	//current_location  = db.get_mg_location();
+	//download_managers = db.get_dl_managers();
+	downloader_state     = 0;
+	init_config();
+	init_callbacks();
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
+/* initialize config */
+void
+Manga_GUI::init_config()
+{
+	gui_config->set_current_location(gui_config->get_mg_location());
+	gui_config->set_revert_current_location(gui_config->get_mg_location());
+
+	gui_config->set_download_managers(gui_config->db_get_dl_managers());
+	gui_config->set_revert_download_managers(gui_config->db_get_dl_managers());
+
+	gui_config->set_current_provider("mangareader");
+}
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
+/* initialize the callbacks */
+void 
+Manga_GUI::init_callbacks()
+{
+	callbacks_data.callbacks_win = win;
+	callbacks_data.callbacks_vbox = vbox;
+	callbacks_data.callbacks_vbox2 = vbox2;
+	callbacks_data.callbacks_vbox3 = vbox3;
+	callbacks_data.callbacks_mainvbox = mainvbox;
+	callbacks_data.callbacks_hbox = hbox;
+	callbacks_data.callbacks_stop_button = stop_button;
+	callbacks_data.callbacks_label = label ;
+	callbacks_data.callbacks_stat_label = stat_label;
+	callbacks_data.callbacks_image_buton= image_buton;
+	callbacks_data.callbacks_add_queue_buton= add_queue_buton;
+	callbacks_data.callbacks_imbox = imbox;
+	callbacks_data.callbacks_wheel =wheel ;
+	callbacks_data.callbacks_wheel2 = wheel2 ;
+	callbacks_data.callbacks_texta = texta;
+	callbacks_data.callbacks_location_text = location_text;
+	callbacks_data.callbacks_dl_manager_combo =dl_manager_combo;
+	callbacks_data.callbacks_name_dl = name_dl;
+	callbacks_data.callbacks_command_dl = command_dl;
+	callbacks_data.callbacks_queue_combo = queue_combo ;
+	callbacks_data.callbacks_q_name_entry = q_name_entry;
+	callbacks_data.callbacks_q_start_entry = q_start_entry;
+	callbacks_data.callbacks_q_end_entry = q_end_entry;
+	callbacks_data.callbacks_pbar1 = pbar1 ;
+	callbacks_data.callbacks_pbar2 =pbar2 ;
+	callbacks_data.callbacks_provider_combo = provider_combo;
+	callbacks_data.callbacks_revert_item = revert_item;
+	callbacks_data.callbacks_accel_group = accel_group;
+
+	//the state of the download
+	callbacks_data.callbacks_downloader_state = &downloader_state ;
+
+	//the downloader
+	callbacks_data.callbacks_downloader = downloader;
+	
+	//the queue to be downloaded
+	//callbacks_data.callbacks_config->set_queue( queue) ;  
+
+	//config which contains the temporary data and the revert data
+	/*
+	std::string                   cfg_current_location;
+	std::vector<dl_mngr>          cfg_download_managers;
+	std::vector<manga_queue_data> cfg_queue;
+
+	std::string                   cfg_revert_current_location;
+	std::vector<dl_mngr>          cfg_revert_download_managers;
+	*/
+	callbacks_data.callbacks_config = gui_config;
+	callbacks_data.callbacks_factory = &factory;
+}
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
 
 /* About Pop Up */
 void 
@@ -83,7 +179,7 @@ Manga_GUI::about_this (GtkWidget *wid, GtkWidget *win)
 	GtkWidget *dialog = NULL;
 	dialog            = gtk_message_dialog_new (GTK_WINDOW (win), 
 			GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, 
-"MangaDL (alpha) v0.1 \n\
+"MangaDL (beta) v0.2 \n\
 Coded By Venam \n\
 <patrick@unixhub.net>");
 	gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
@@ -111,6 +207,7 @@ Manga_GUI::delete_event( GtkWidget *widget, GdkEvent *event, gpointer data )
 	 * you don't want the window to be destroyed.
 	 * This is useful for popping up 'are you sure you want to quit?'
 	 * type dialogs. */
+	//DEBUG
 	g_print ("delete event occurred\n");
 	/* Change TRUE to FALSE and the main window will be destroyed with
 	 * a "delete-event". */
@@ -124,18 +221,15 @@ GtkWidget *
 Manga_GUI::xpm_label_box( gchar *xpm_filename, gchar *label_text )
 {
 	GtkWidget *box;
-	GtkWidget *label;
 	GtkWidget *image;
 	/* Create box for image and label */
 	box = gtk_hbox_new (true, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (box), 2);
 	/* Now on to the image stuff */
 	image = gtk_image_new_from_file (xpm_filename);
-	/* Create a label for the button */
-	label = gtk_label_new (label_text);
 	/* Pack the image and label into the box */
 	gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
+	//gtk_box_pack_start (GTK_BOX (box), label_text, FALSE, FALSE, 0);
 	gtk_widget_show (image);
 	//gtk_widget_show (label);
 	return box;
@@ -146,72 +240,47 @@ Manga_GUI::xpm_label_box( gchar *xpm_filename, gchar *label_text )
 void 
 Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 {
-	/* contains
-	 * the current location S1
-	 * download managers    DL
-	 * the queue            Q
-	 * the queue combo box  D1
-	 * the q name entry     D2
-	 * the q start entry    D3
-	 * the q end entry      D4
-	 * The progress bar1    D5
-	 * The progress bar2    D6
-	 * the download button  D7
-	 * the stat label       D8
-	 * combo with providers D9
-	 * the current provider CUR_PROV
-	 * state of the dowldr  ISDL 0-nothing 1-downloading 2-paused
-	 * downloader instance  DLDER_*
-	 */ 
-	callback_items *w = (callback_items*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
 	/* nothing state */
-	if( *w->ISDL == 0) {
+	if( user_callbacks->callbacks_downloader_state == 0) {
 		
 		/* Check if the queue is empty */
-		if ( (*w->Q).size() == 0 ) {
+		if ( (user_callbacks->callbacks_config->cfg_queue).size() == 0 ) {
 			wpopup("The queue is empty");
 			return;
 		}
 
-		gtk_button_set_label( (GtkButton*)w->D7, "Pause");
+		gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, "Pause");
 		/* download state */
-		*w->ISDL = 1;
-		/* set the provider */
-		*w->CUR_PROV = gtk_combo_box_get_active( (GtkComboBox*) w->D9 );
+		*user_callbacks->callbacks_downloader_state = 1;
+		/* that's how to get the provider */
+		//gtk_combo_box_get_active_text( (GtkComboBox*) user_callbacks->callbacks_provider_combo );
 
 		/* start the thread that manages the download */
 		pthread_t th_1;
-		pthread_create(&th_1,NULL,&start_download, w);
+		pthread_create(&th_1,NULL,&start_download, user_callbacks);
 		return;
 	}
 	/* download state */
-	else if( *w->ISDL == 1) {
-		gtk_button_set_label( (GtkButton*)w->D7, "Unpause");
+	else if( *user_callbacks->callbacks_downloader_state == 1) {
+		gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, "Unpause");
 		/* pause state */
-		*w->ISDL = 2;
+		*user_callbacks->callbacks_downloader_state = 2;
 		/* pause the current class instance */
-		if ( *w->CUR_PROV == 0 )
-			(*w->DLDER_reader).pause_unpause();
-		else if (*w->CUR_PROV == 1 )
-			(*w->DLDER_park).pause_unpause();
-
+		user_callbacks->callbacks_downloader->pause_unpause();
 		return;
 	}
 	/* pause state */
-	else if ( *w->ISDL ==2) {
-		gtk_button_set_label( (GtkButton*)w->D7, "Pause");
+	else if ( *user_callbacks->callbacks_downloader_state ==2) {
+		gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, "Pause");
 		/* download state */
-		*w->ISDL = 1;
+		*user_callbacks->callbacks_downloader_state = 1;
 
-		if ( *w->CUR_PROV == 0 )
-			(*w->DLDER_reader).pause_unpause();
-		else if ( *w->CUR_PROV ==1 )
-			(*w->DLDER_park).pause_unpause();
-
+		user_callbacks->callbacks_downloader->pause_unpause();
 		return;
 	}
-	gtk_widget_show_all (w->D10);
+	gtk_widget_show_all (user_callbacks->callbacks_win);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -219,84 +288,57 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 void*
 Manga_GUI::start_download( void *user_data)
 {
-	/* contains
-	 * the current location S1
-	 * download managers    DL
-	 * the queue            Q
-	 * the queue combo box  D1
-	 * the q name entry     D2
-	 * the q start entry    D3
-	 * the q end entry      D4
-	 * The progress bar1    D5
-	 * The progress bar2    D6
-	 * the download button  D7
-	 * the stat label       D8
-	 * state of the dowldr  ISDL 0-nothing 1-downloading 2-paused
-	 * downloader instance  DLDER
-	 */ 
-	callback_items *w = (callback_items*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	std::string download_command = "default";
 	std::string download_location = "";
-	for (unsigned int i=0; i< (*w->DL).size() ; i++)
-		if ( (*w->DL)[i].selected) 
-			download_command = (*w->DL)[i].command ;
-	download_location = *w->S1;
-
-	g_timeout_add_seconds (3, update_bars, (gpointer) w );
-	/* download until the queue is empty */
-	while ( (*w->Q).size() != 0 ) {
-		gtk_entry_set_text( (GtkEntry*)w->D2, " ");
-		gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
-		gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
-		/* initialized the progress bars */
-		gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D5, 0.0);
-		gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D6, 0.0);
-		/* put some status text */
-		std::string stat_text = 
-			(*w->Q)[0].manga_name +": "+(*w->Q)[0].start_chapter+"->"+ (*w->Q)[0].end_chapter;
-		gtk_label_set_text( (GtkLabel*) w->D8, stat_text.c_str() );
-
-		/* init the downloader */
-		if ( *w->CUR_PROV == 0 ) {
-			(*w->DLDER_reader).init( 
-					(*w->Q)[0].manga_name,
-					download_location,
-					download_command,
-					(*w->Q)[0].start_chapter,
-					(*w->Q)[0].end_chapter
-			);
+	for (unsigned int i=0; i< (user_callbacks->callbacks_config->get_download_managers() ).size() ; i++)
+		if ( user_callbacks->callbacks_config->cfg_download_managers[i].selected) {
+			download_command = user_callbacks->callbacks_config->cfg_download_managers[i].command ;
 		}
-		else if ( *w->CUR_PROV ==1 ) {
-			(*w->DLDER_park).init( 
-				(*w->Q)[0].manga_name,
+		else {
+			// it's the default download manager
+		}
+	download_location = user_callbacks->callbacks_config->cfg_current_location;
+
+	g_timeout_add_seconds (3, update_bars, (gpointer) user_callbacks);
+	/* download until the queue is empty */
+	while ( user_callbacks->callbacks_config->cfg_queue.size() != 0 ) {
+		gtk_entry_set_text( (GtkEntry*)user_callbacks->callbacks_q_name_entry, " ");
+		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_start_entry, 1);
+		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_end_entry, 1);
+		/* initialized the progress bars */
+		user_callbacks->callbacks_downloader = user_callbacks->callbacks_factory->get_provider(
+				gtk_combo_box_get_active_text( 
+					(GtkComboBox*) user_callbacks->callbacks_provider_combo )
+				);
+		user_callbacks->callbacks_downloader->init( 
+				user_callbacks->callbacks_config->cfg_queue[0].manga_name,
 				download_location,
 				download_command,
-				(*w->Q)[0].start_chapter,
-				(*w->Q)[0].end_chapter
-			);
-		}
+				user_callbacks->callbacks_config->cfg_queue[0].start_chapter,
+				user_callbacks->callbacks_config->cfg_queue[0].end_chapter
+		);
 		/* remove the first value from the queue and the combo box */
-		if ((*w->Q).size()!=0)
-			(w->Q)->erase( (*w->Q).begin() );
-		gtk_combo_box_remove_text( (GtkComboBox*)w->D1, 0);
+		if (user_callbacks->callbacks_config->cfg_queue.size()!=0) {
+			user_callbacks->callbacks_config->cfg_queue.erase( 
+					user_callbacks->callbacks_config->cfg_queue.begin() );
+		}
+		gtk_combo_box_remove_text( (GtkComboBox*)user_callbacks->callbacks_queue_combo, 0);
 
 		/* start the download */
-		if ( *w->CUR_PROV == 0)
-			(*w->DLDER_reader).run();
-		else if ( *w->CUR_PROV ==1)
-			(*w->DLDER_park).run();
+		user_callbacks->callbacks_downloader->run();
 	}
 	/* reinit the stuff */
-	gtk_button_set_label( (GtkButton*)w->D7, " Download ");
-	gtk_widget_show(w->D7);
-	gtk_entry_set_text( (GtkEntry*)w->D2, " ");
-	gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
-	gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
-	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.001);
-	gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.001);
-	gtk_label_set_text( (GtkLabel*) w->D8, " " );
-	*w->ISDL = 0;
-	gtk_widget_show_all (w->D10);
+	gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, " Download ");
+	gtk_widget_show(user_callbacks->callbacks_image_buton);
+	gtk_entry_set_text( (GtkEntry*)user_callbacks->callbacks_q_name_entry, " ");
+	gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_start_entry, 1);
+	gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_end_entry, 1);
+	gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar1, 0.001);
+	gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar2, 0.001);
+	gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_stat_label, " " );
+	user_callbacks->callbacks_downloader_state  = 0;
+	gtk_widget_show_all (user_callbacks->callbacks_win);
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
 	return NULL;
@@ -307,36 +349,44 @@ Manga_GUI::start_download( void *user_data)
 gint
 Manga_GUI::update_bars( gpointer user_data )
 {
-	callback_items *w = (callback_items*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
 	/* stop updating when the queue is empty */
 	//if ( (*w->Q).size() == 0 || (*w->DLDER).finished() ||
-	if ( *w->ISDL == 0 ) return false;
-	mg_status stat;
-	if (*w->CUR_PROV ==0 )
-		stat =  (*w->DLDER_reader).get_status();
-	else /* if(*w->CUR_PROV ==1) */
-		stat =  (*w->DLDER_park).get_status();
-	/*
-	 * nb of chapters downloading = stat.end_chapter-stat.start_chapter+1;
-	 * nb of already dlded        = stat.cur_chapter - stat.start_chapter+1;
-	 *
-	 */ 
-	if (stat.end_chapter == 0 ) return true;
-	gdouble chapter_progress = 
-		(gdouble)(stat.cur_chapter-stat.start_chapter+1)
-		/
-		(gdouble)(stat.end_chapter-stat.start_chapter+1);
-	gdouble page_progress = 
-		(gdouble)(stat.cur_page)/
-		(gdouble)(stat.end_page);
-	if ( chapter_progress < 0 || chapter_progress > 1.0 ) return true;
-	if ( page_progress < 0 || page_progress > 1.0 ) return true;
+	if ( user_callbacks->callbacks_downloader_state == 0 ) { 
+		return false;
+	}
+	else {
+		mg_status stat =  user_callbacks->callbacks_downloader->get_status();
+		/*
+		* nb of chapters downloading = stat.end_chapter-stat.start_chapter+1;
+		* nb of already dlded        = stat.cur_chapter - stat.start_chapter+1;
+		*/ 
+		if (stat.end_chapter == 0 )  {
+			return true;
+		}
+		else {
+			gdouble chapter_progress = 
+				(gdouble)(stat.cur_chapter-stat.start_chapter+1)
+				/
+				(gdouble)(stat.end_chapter-stat.start_chapter+1);
+			gdouble page_progress = 
+				(gdouble)(stat.cur_page)/
+				(gdouble)(stat.end_page);
+			if ( chapter_progress < 0 || chapter_progress > 1.0 ) {
+				return true;
+			}
+			else if ( page_progress < 0 || page_progress > 1.0 ) {
+				return true;
+			}
+			else {
 
-	gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D5, chapter_progress);
-	gtk_progress_bar_set_fraction( (GtkProgressBar*) w->D6, page_progress);
-	gtk_widget_show_all (w->D10);
-
+				gtk_progress_bar_set_fraction( (GtkProgressBar*) user_callbacks->callbacks_pbar1, chapter_progress);
+				gtk_progress_bar_set_fraction( (GtkProgressBar*) user_callbacks->callbacks_pbar2, page_progress);
+			}
+		}
+		gtk_widget_show_all (user_callbacks->callbacks_win);
+	}
 	return true;
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -345,47 +395,31 @@ Manga_GUI::update_bars( gpointer user_data )
 void 
 Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 {
-	/* contains
-	 * the current location S1 --not used
-	 * download managers    DL --not used
-	 * the queue            Q  --not used
-	 * the queue combo box  D1 --not used
-	 * the q name entry     D2
-	 * the q start entry    D3
-	 * the q end entry      D4
-	 * The progress bar1    D5
-	 * The progress bar2    D6
-	 * the download button  D7
-	 * the stat label       D8
-	 * the combo providers  D9
-	 * current provider     CUR_PROV
-	 * is downloading atm   ISDL
-	 * downloader instance  DLDER_*
-	 */ 
-	callback_items *w = (callback_items*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	
 	/* if we are not in the "nothing state" */
-	if(*w->ISDL!=0) {
+	if(user_callbacks->callbacks_downloader_state!=0) {
 		GtkWidget *dialog1 = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, 
 			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "Stoping download");
 		gtk_window_set_position (GTK_WINDOW (dialog1), GTK_WIN_POS_CENTER);
 		gtk_dialog_run (GTK_DIALOG (dialog1));
 		gtk_widget_destroy (dialog1);
 		/* reset stuffs */
-		gtk_entry_set_text( (GtkEntry*)w->D2, "  ");
-		gtk_spin_button_set_value( (GtkSpinButton*)w->D3, 1);
-		gtk_spin_button_set_value( (GtkSpinButton*)w->D4, 1);
-		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D5, 0.001);
-		gtk_progress_bar_set_fraction( (GtkProgressBar*)w->D6, 0.001);
-		gtk_button_set_label( (GtkButton*)w->D7, "Download");
-		gtk_label_set_text( (GtkLabel*) w->D8, "  " );
-		*w->ISDL = 0;
-		if ( *w->CUR_PROV == 0 ) 
-			(*w->DLDER_reader).stop();
-		else if (*w->CUR_PROV ==1)
-			(*w->DLDER_park).stop();
+		gtk_entry_set_text( (GtkEntry*)user_callbacks->callbacks_q_name_entry, "  ");
+		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_start_entry, 1);
+		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_end_entry, 1);
+		gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar1, 0.001);
+		gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar2, 0.001);
+		gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, "Download");
+		gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_stat_label, "  " );
+		user_callbacks->callbacks_downloader_state = 0;
+		user_callbacks->callbacks_downloader->stop();
 		/* set the current provider to the one that is selected atm */
-		*w->CUR_PROV = gtk_combo_box_get_active( (GtkComboBox*) w->D9);
+		user_callbacks->callbacks_config->cfg_current_provider = 
+			gtk_combo_box_get_active_text( (GtkComboBox*) user_callbacks->callbacks_provider_combo);
+	}
+	else {
+		//already not downloading anything
 	}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -396,7 +430,7 @@ void
 Manga_GUI::location_callback(GtkWidget *wid, gpointer user_data)
 {
 	std::string dirpath = "";
-	callback_items *w = (callback_items*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
 	GtkWidget *select_dir = gtk_file_chooser_dialog_new("Select a Dir", NULL,
 		GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -406,9 +440,9 @@ Manga_GUI::location_callback(GtkWidget *wid, gpointer user_data)
 		dirpath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (select_dir) );
 	gtk_widget_destroy(select_dir);
 
-	*((std::string *)w->S1) = dirpath;
+	user_callbacks->callbacks_config->cfg_current_location = dirpath;
 	dirpath = "Download Location "+dirpath;
-	gtk_label_set_text( (GtkLabel*) w->D1, dirpath.c_str() );
+	gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_location_text, dirpath.c_str() );
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -416,23 +450,25 @@ Manga_GUI::location_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 {
-	select_dl_manager* data = (select_dl_manager*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
-	int position_to_choose  = gtk_combo_box_get_active ( (GtkComboBox*) data->D1 );
+	int position_to_choose  = gtk_combo_box_get_active ( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo );
 	if (position_to_choose == -1) {
 		wpopup("Cannot select the command");
 		return;
 	}
 
-	std::string selected_dl   = gtk_combo_box_get_active_text ( (GtkComboBox*)data->D1 );
-	for (unsigned int i=0; i< (*data->DL).size() ; i++)
-		if ( (*data->DL)[i].name==selected_dl){
-			(*data->DL)[i].selected = true;
-			std::cout<< (*data->DL)[i].name<<" Selected "<<"\n";
+	std::string selected_dl   = gtk_combo_box_get_active_text ( (GtkComboBox*)user_callbacks->callbacks_dl_manager_combo );
+	for (unsigned int i=0; i< user_callbacks->callbacks_config->cfg_download_managers.size() ; i++)
+		if ( user_callbacks->callbacks_config->cfg_download_managers[i].name==selected_dl){
+			user_callbacks->callbacks_config->cfg_download_managers[i].selected = true;
+			//DEBUG
+			std::cout<< user_callbacks->callbacks_config->cfg_download_managers[i].name<<" Selected "<<"\n";
 		}
 		else {
-			(*data->DL)[i].selected = false;
-			std::cout<< (*data->DL)[i].name<<"\n";
+			user_callbacks->callbacks_config->cfg_download_managers[i].selected = false;
+			//DEBUG
+			std::cout<< user_callbacks->callbacks_config->cfg_download_managers[i].name<<"\n";
 		}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -441,32 +477,38 @@ Manga_GUI::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::add_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
 {
-	select_dl_manager* data = (select_dl_manager*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
-
-	std::string dl_name = gtk_entry_get_text( (GtkEntry*) data->D2 );
-	std::string command = gtk_entry_get_text( (GtkEntry*) data->D3 );
+	std::string dl_name = gtk_entry_get_text( (GtkEntry*) user_callbacks->callbacks_name_dl );
+	std::string command = gtk_entry_get_text( (GtkEntry*) user_callbacks->callbacks_command_dl );
 	bool problem = false;
-	for (unsigned int i=0; i< (*data->DL).size() ; i++)
-		if ( (*data->DL)[i].name==dl_name)
+	for (unsigned int i=0; i< user_callbacks->callbacks_config->cfg_download_managers.size() ; i++)
+		if ( user_callbacks->callbacks_config->cfg_download_managers[i].name==dl_name) {
 			problem = true;
-		else if ( (*data->DL)[i].command== command )
+		}
+		else if ( user_callbacks->callbacks_config->cfg_download_managers[i].command== command ) {
 			problem = true;
+		}
+		else {
+			//something weird happened
+		}
 	if (problem || dl_name=="Name" || command =="Command"|| dl_name==""||command =="") {
 		wpopup("Cannot add the command");
 		return;
 	}
-	/* Add to the combo box */
-	gtk_combo_box_append_text( (GtkComboBox*) data->D1 , dl_name.c_str());
-	/* Clear the Text boxes */
-	gtk_entry_set_text( (GtkEntry*) data->D2, "");
-	gtk_entry_set_text( (GtkEntry*) data->D3, "");
-	/* Add to the list */
-	dl_mngr new_dl_mngr;
-	new_dl_mngr.name     = dl_name;
-	new_dl_mngr.command  = command;
-	new_dl_mngr.selected = false;
-	(*data->DL).push_back(new_dl_mngr);
+	else {
+		/* Add to the combo box */
+		gtk_combo_box_append_text( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo , dl_name.c_str());
+		/* Clear the Text boxes */
+		gtk_entry_set_text( (GtkEntry*) user_callbacks->callbacks_name_dl, "");
+		gtk_entry_set_text( (GtkEntry*) user_callbacks->callbacks_command_dl, "");
+		/* Add to the list */
+		dl_mngr new_dl_mngr;
+		new_dl_mngr.name     = dl_name;
+		new_dl_mngr.command  = command;
+		new_dl_mngr.selected = false;
+		user_callbacks->callbacks_config->cfg_download_managers.push_back(new_dl_mngr);
+	}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -474,21 +516,25 @@ Manga_GUI::add_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::del_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
 {
-	select_dl_manager* data = (select_dl_manager*) user_data;
-	int position_to_delete  = gtk_combo_box_get_active ( (GtkComboBox*) data->D1 );
+	callbacks* user_callbacks = (callbacks*) user_data;
+	int position_to_delete  = gtk_combo_box_get_active ( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo );
 
 	if (position_to_delete == -1) {
 		wpopup("Cannot delete the command");
 		return;
 	}
 
-	std::string selected_dl = gtk_combo_box_get_active_text ( (GtkComboBox*)data->D1 );
+	std::string selected_dl = gtk_combo_box_get_active_text ( (GtkComboBox*)user_callbacks->callbacks_dl_manager_combo );
 	/* remove from list */
-	for (unsigned int i=0; i< (*data->DL).size() ; i++)
-		if ( (*data->DL)[i].name==selected_dl)
-			(*data->DL).erase( (*data->DL).begin()+i );
+	for (unsigned int i=0; i< user_callbacks->callbacks_config->cfg_download_managers.size() ; i++) {
+		if ( user_callbacks->callbacks_config->cfg_download_managers[i].name==selected_dl) {
+			user_callbacks->callbacks_config->cfg_download_managers.erase( user_callbacks->callbacks_config->cfg_download_managers.begin()+i );
+		}
+		else {
+		}
+	}
 	/* Remove from the combo box */
-	gtk_combo_box_remove_text ( (GtkComboBox*) data->D1, position_to_delete);
+	gtk_combo_box_remove_text ( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo, position_to_delete);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -496,10 +542,11 @@ Manga_GUI::del_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 {
-	select_dl_manager* data = (select_dl_manager*) user_data;
-	data->DB.update_mg_location( (*data->S1) );
-	std::cout<< (*data->S1)<<"\n";
-	data->DB.update_dl_manager( (*data->DL) );
+	callbacks* user_callbacks = (callbacks*) user_data;
+	user_callbacks->callbacks_config->update_mg_location( user_callbacks->callbacks_config->cfg_current_location );
+	//DEBUG
+	std::cout<< user_callbacks->callbacks_config->cfg_current_location<<"\n";
+	user_callbacks->callbacks_config->db_update_dl_manager( user_callbacks->callbacks_config->cfg_download_managers );
 
 	GtkWidget *dialog1 = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, 
 		GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "Database has been updated");
@@ -513,24 +560,27 @@ Manga_GUI::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 void
 Manga_GUI::rever_callback(GtkWidget *wid, gpointer user_data)
 {
-	select_dl_manager *data = (select_dl_manager*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	/* revert the location */
-	std::string mg_loc = data->DB.get_mg_location();
-	*data->S1 = mg_loc;
+	std::string mg_loc = user_callbacks->callbacks_config->get_mg_location();
+	user_callbacks->callbacks_config->cfg_current_location = mg_loc;
 	mg_loc = "Download Location "+mg_loc;
-	gtk_label_set_text( (GtkLabel*) data->D1, mg_loc.c_str());
+	gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_location_text, mg_loc.c_str());
 	/* revert the dl managers */
-	for (unsigned int i=0; i<(*data->DL).size(); i++)
-		gtk_combo_box_remove_text( (GtkComboBox*) data->D2, 0);
-	(*data->DL).clear();
-	*data->DL = data->DB.get_dl_managers();
-	for(unsigned int i=0;i<(*data->DL).size();i++) {
-		gtk_combo_box_append_text( (GtkComboBox*) data->D2 , 
-			(*data->DL)[i].name.c_str());
-		if ( (*data->DL)[i].selected )
-			gtk_combo_box_set_active( (GtkComboBox*)  data->D2, i );
+	for (unsigned int i=0; i<user_callbacks->callbacks_config->cfg_download_managers.size(); i++) {
+		gtk_combo_box_remove_text( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo, 0);
 	}
-
+	user_callbacks->callbacks_config->cfg_download_managers.clear();
+	user_callbacks->callbacks_config->cfg_download_managers = user_callbacks->callbacks_config->db_get_dl_managers();
+	for(unsigned int i=0;i< user_callbacks->callbacks_config->cfg_download_managers.size();i++) {
+		gtk_combo_box_append_text( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo , 
+			user_callbacks->callbacks_config->cfg_download_managers[i].name.c_str());
+		if ( user_callbacks->callbacks_config->cfg_download_managers[i].selected ) {
+			gtk_combo_box_set_active( (GtkComboBox*)  user_callbacks->callbacks_dl_manager_combo, i );
+		}
+		else {
+		}
+	}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -538,37 +588,50 @@ Manga_GUI::rever_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 {
-	callback_q_data *data = (callback_q_data*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 
 	/* check if the start chapter is less than the end chapter */
-	int start_int = gtk_spin_button_get_value_as_int( (GtkSpinButton*) data->D2 );
-	int end_int = gtk_spin_button_get_value_as_int( (GtkSpinButton*) data->D3 );
+	int start_int = gtk_spin_button_get_value_as_int( (GtkSpinButton*) user_callbacks->callbacks_wheel );
+	int end_int   = gtk_spin_button_get_value_as_int( (GtkSpinButton*) user_callbacks->callbacks_wheel2 );
+
 	if (start_int > end_int) {
 		wpopup("can't download in reverse order");
 		return;
 	}
+	else {
+		//ok so it's not in reverse
+	}
 
 	/* get the manga name */
-	std::string mgname_to_add = gtk_entry_get_text( (GtkEntry*) data->D1 );
+	std::string mgname_to_add = gtk_entry_get_text( (GtkEntry*) user_callbacks->callbacks_texta );
 	if (mgname_to_add == "Manga Name" || mgname_to_add == "") {
 		wpopup("You didn't specify a correct manga name");
 		return;
 	}
+	else {
+		//so the user changed the default value... but does the manga really exist,
+		//are we getting garbage, who knows?
+		//TODO: do some verification
+	}
 
 	replaceAll(mgname_to_add, " ","");
 
-	std::string to_add_to_combo = mgname_to_add+" | "+to_string(start_int)+" -> "+to_string(end_int);
+	std::string to_add_to_combo = 
+		mgname_to_add+" | "+to_string(start_int)+" -> "+to_string(end_int);
 	/* Add to the combo box */
-	gtk_combo_box_append_text( (GtkComboBox*) data->D4 , to_add_to_combo.c_str());
+	gtk_combo_box_append_text( (GtkComboBox*) user_callbacks->callbacks_queue_combo , 
+			to_add_to_combo.c_str());
 
 	manga_queue_data new_to_queue;
-	new_to_queue.manga_name = mgname_to_add;
-	new_to_queue.start_chapter = to_string(start_int);
-	new_to_queue.end_chapter = to_string(end_int);
-	(*data->Q).push_back(new_to_queue);
+	new_to_queue.manga_name             = mgname_to_add;
+	new_to_queue.start_chapter          = to_string(start_int);
+	new_to_queue.end_chapter            = to_string(end_int);
+	user_callbacks->callbacks_config->cfg_queue.push_back(new_to_queue);
 
-	for(unsigned int i=0; i< (*data->Q).size() ; i++)
-		std::cout<< (*data->Q)[i].manga_name <<"\n";
+	for(unsigned int i=0; i< user_callbacks->callbacks_config->cfg_queue.size() ; i++) {
+		//DEBUG
+		std::cout<< user_callbacks->callbacks_config->cfg_queue[i].manga_name <<"\n";
+	}
 
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -577,17 +640,23 @@ Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 void 
 Manga_GUI::select_q_callback(GtkWidget *wid, gpointer user_data )
 {
-	callback_q_data *data = (callback_q_data*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
-	int active = gtk_combo_box_get_active( (GtkComboBox*) data->D4);
-	if (active==-1) return;
-	std::string active_name  = (*data->Q)[active].manga_name;
-	std::string active_start = (*data->Q)[active].start_chapter;
-	std::string active_end   = (*data->Q)[active].end_chapter;
+	int active = gtk_combo_box_get_active( (GtkComboBox*) user_callbacks->callbacks_queue_combo);
+	if (active==-1) {
+		return;
+	}
+	else {
+		//we can still remove from the queue because it's not empty
+	}
+	std::string active_name  = user_callbacks->callbacks_config->cfg_queue[active].manga_name;
+	std::string active_start =  user_callbacks->callbacks_config->cfg_queue[active].start_chapter;
+	std::string active_end   =  user_callbacks->callbacks_config->cfg_queue[active].end_chapter;
 
-	gtk_entry_set_text( (GtkEntry*) data->D1, active_name.c_str() );
-	gtk_spin_button_set_value( (GtkSpinButton*) data->D2, atoi(active_start.c_str()));
-	gtk_spin_button_set_value( (GtkSpinButton*) data->D3, atoi(active_end.c_str()));
+	gtk_entry_set_text( (GtkEntry*) user_callbacks->callbacks_q_name_entry, active_name.c_str() );
+	gtk_spin_button_set_value( (GtkSpinButton*) user_callbacks->callbacks_q_start_entry, 
+			atoi(active_start.c_str()));
+	gtk_spin_button_set_value( (GtkSpinButton*) user_callbacks->callbacks_q_end_entry, atoi(active_end.c_str()));
 
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -596,35 +665,49 @@ Manga_GUI::select_q_callback(GtkWidget *wid, gpointer user_data )
 void 
 Manga_GUI::change_q_callback(GtkWidget *wid, gpointer user_data )
 {
-	callback_q_data *data = (callback_q_data*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
-	int active = gtk_combo_box_get_active( (GtkComboBox*) data->D4);
-	if (active ==-1) return;
-	int st = gtk_spin_button_get_value_as_int( (GtkSpinButton*) data->D2);
-	int en = gtk_spin_button_get_value_as_int( (GtkSpinButton*) data->D3);
+	int active = gtk_combo_box_get_active( (GtkComboBox*) user_callbacks->callbacks_queue_combo);
+	if (active ==-1) {
+		return;
+	}
+	else {
+		//we can continue because we have at least one thing in the combo
+	}
+	int st = gtk_spin_button_get_value_as_int( (GtkSpinButton*) user_callbacks->callbacks_q_start_entry);
+	int en = gtk_spin_button_get_value_as_int( (GtkSpinButton*) user_callbacks->callbacks_q_end_entry);
 
 	if (st>en) {
 		wpopup("Can't download in reverse order");
 		return;
 	}
+	else {
+		//at this point everything should be fine
+	}
 
 	std::string active_start = to_string(st);
 	std::string active_end   = to_string(en);
 
-	(*data->Q)[active].start_chapter = active_start;
-	(*data->Q)[active].end_chapter   = active_end;
+	user_callbacks->callbacks_config->cfg_queue[active].start_chapter = active_start;
+	user_callbacks->callbacks_config->cfg_queue[active].end_chapter   = active_end;
+
+	//DEBUG
 	std::cout<<"here\n"
 		<<active
 		<<"\n";
 
 	std::string to_add_to_combo = 
-		(*data->Q)[active].manga_name+" | "+active_start+" -> "+active_end;
-	std::cout<<to_add_to_combo <<"\n";
-	/* Add to the combo box */
-	gtk_combo_box_text_insert_text( (GtkComboBoxText*) data->D4 , active,to_add_to_combo.c_str());
-	gtk_combo_box_set_active ( (GtkComboBox*) data->D4, active);
+		user_callbacks->callbacks_config->cfg_queue[active].manga_name+" | "+active_start+" -> "+active_end;
 
-	gtk_combo_box_text_remove( (GtkComboBoxText*) data->D4, active+1);
+	//DEBUG
+	std::cout<<to_add_to_combo <<"\n";
+
+	/* Add to the combo box */
+	gtk_combo_box_text_insert_text( (GtkComboBoxText*) user_callbacks->callbacks_queue_combo, 
+			active,to_add_to_combo.c_str());
+	gtk_combo_box_set_active ( (GtkComboBox*) user_callbacks->callbacks_queue_combo, active);
+
+	gtk_combo_box_text_remove( (GtkComboBoxText*) user_callbacks->callbacks_queue_combo, active+1);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -632,21 +715,28 @@ Manga_GUI::change_q_callback(GtkWidget *wid, gpointer user_data )
 void 
 Manga_GUI::delete_q_callback(GtkWidget *wid, gpointer user_data )
 {
-	callback_q_data *data = (callback_q_data*) user_data;
+	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
-	int active = gtk_combo_box_get_active( (GtkComboBox*) data->D4);
-	if (active ==-1) return;
+	int active = gtk_combo_box_get_active( (GtkComboBox*) user_callbacks->callbacks_queue_combo);
+	if (active ==-1) {
+		return;
+	}
+	else {
+		//has at least one mg
+	}
 
 
 	/* clear the text boxes */
-	gtk_entry_set_text( (GtkEntry*) data->D1, "");
-	gtk_spin_button_set_value( (GtkSpinButton*) data->D2, 1);
-	gtk_spin_button_set_value( (GtkSpinButton*) data->D3, 1);
+	gtk_entry_set_text( (GtkEntry*) user_callbacks->callbacks_q_name_entry, "");
+	gtk_spin_button_set_value( (GtkSpinButton*) user_callbacks->callbacks_q_start_entry, 1);
+	gtk_spin_button_set_value( (GtkSpinButton*) user_callbacks->callbacks_q_end_entry, 1);
 	/* remove from the combo box */
+	//DEBUG
 	std::cout<<active<<"\n";
-	gtk_combo_box_remove_text ( (GtkComboBox*) data->D4, active);
+	gtk_combo_box_remove_text ( (GtkComboBox*) user_callbacks->callbacks_queue_combo, active);
 	/* remove from the queue */
-	(*data->Q).erase( (*data->Q).begin()+active );
+	user_callbacks->callbacks_config->cfg_queue.erase( 
+			user_callbacks->callbacks_config->cfg_queue.begin()+active );
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -685,9 +775,7 @@ Manga_GUI::config_menu_fill(GtkWidget *menubar)
 	GtkWidget *item_container = gtk_menu_new ();
 
 	GtkWidget *location_item = gtk_menu_item_new_with_mnemonic ("Mg _Location");
-	wstruct_loc.D1 = location_text;
-	wstruct_loc.S1 = &current_location;
-	g_signal_connect (location_item, "activate", G_CALLBACK(location_callback), &wstruct_loc);
+	g_signal_connect (location_item, "activate", G_CALLBACK(location_callback), &callbacks_data);
 
 	gtk_menu_append (GTK_MENU (item_container), location_item);
 
@@ -695,16 +783,12 @@ Manga_GUI::config_menu_fill(GtkWidget *menubar)
 			GDK_l, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
 	GtkWidget *save_item = gtk_menu_item_new_with_mnemonic ("_Save Configs");
-	dl_mngr_callback_data.DL = &download_managers;
-	dl_mngr_callback_data.DB = db;
-	dl_mngr_callback_data.S1 = &current_location;
-	g_signal_connect (save_item, "activate", G_CALLBACK (save_cfg_callback), &dl_mngr_callback_data);
+	g_signal_connect (save_item, "activate", G_CALLBACK (save_cfg_callback), &callbacks_data);
 	gtk_menu_append (GTK_MENU (item_container), save_item);
 	gtk_widget_add_accelerator (save_item, "activate", accel_group, 
 		GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
 
-	revert_item = gtk_menu_item_new_with_mnemonic ("_Revert Configs");
 	
 	gtk_menu_append (GTK_MENU (item_container), revert_item);
 	gtk_widget_add_accelerator (revert_item, "activate", accel_group, 
@@ -783,7 +867,6 @@ Manga_GUI::hpack_2()
 	gtk_box_pack_start (GTK_BOX (mainvbox), label, FALSE, FALSE, 0);
 
 	/* create a new label. */
-	stat_label = gtk_label_new ("");
 	gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
 	gtk_box_pack_start (GTK_BOX (mainvbox), stat_label, FALSE, FALSE, 0);
 }
@@ -793,14 +876,11 @@ Manga_GUI::hpack_2()
 void 
 Manga_GUI::hpack_3()
 {
-	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 0);
 
-	texta =gtk_entry_new();
 	gtk_entry_set_text((GtkEntry*)texta,"Manga Name");
 	gtk_box_pack_start (GTK_BOX (hbox),texta , true, true, 10); //box,child,expand,fill,padding
 
-	add_queue_buton = gtk_button_new();
 	gtk_button_set_label( (GtkButton*)add_queue_buton, "Add to Queue");
 	gtk_box_pack_start (GTK_BOX (hbox), add_queue_buton, false, false, 10);
 	
@@ -820,13 +900,11 @@ Manga_GUI::hpack_4()
 	label = gtk_label_new ("From");
 	gtk_box_pack_start( GTK_BOX(hbox), label, false, false, 10);
 	//spin
-	wheel = gtk_spin_button_new_with_range(1,2000,1);
 	gtk_box_pack_start(GTK_BOX (hbox), wheel, true, true, 10);
 
 	label = gtk_label_new ("to");
 	gtk_box_pack_start( GTK_BOX(hbox), label, false, false, 10);
 	//spin
-	wheel2 = gtk_spin_button_new_with_range(1,2000,1);
 	gtk_box_pack_start(GTK_BOX (hbox), wheel2, true, true, 10);
 
 }
@@ -839,7 +917,6 @@ Manga_GUI::hpack_5()
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 10);
 	
-	pbar1 = gtk_progress_bar_new();
 	gtk_box_pack_start( GTK_BOX(hbox), pbar1, true, true, 10);
 
 	label = gtk_label_new ("Chapters");
@@ -854,7 +931,6 @@ Manga_GUI::hpack_6()
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 10);
 	
-	pbar2 = gtk_progress_bar_new();
 	gtk_box_pack_start( GTK_BOX(hbox), pbar2, true, true, 10);
 
 	label = gtk_label_new ("Pages   ");
@@ -870,9 +946,6 @@ Manga_GUI::hpack_7()
 	hbox = gtk_hbox_new (TRUE,4);
 	//gtk_container_add (GTK_CONTAINER (vbox), hbox);
 	gtk_box_pack_end(GTK_BOX (vbox), hbox,TRUE, TRUE, 0);
-	///image button
-	image_buton = gtk_button_new();
-	stop_button = gtk_button_new_with_label("Stop");
 	/* the callback is at the end of the packs */
 	
 	/* This calls our box creating function , the box is inserted inside the button*/
@@ -895,15 +968,12 @@ Manga_GUI::hpack2_1()
 	hbox = gtk_hbox_new (false,20);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 20);
 
-	std::string label_text = "Download Location "+current_location;
-	location_text = gtk_label_new( label_text.c_str() );
+	std::string label_text = "Download Location "+gui_config->cfg_current_location;
 	gtk_box_pack_start (GTK_BOX (hbox),location_text, true, true, 10); //box,child,expand,fill,padding
 
 	GtkWidget *location_buton = gtk_button_new();
-	wstruct_loc.D1 = location_text;
-	wstruct_loc.S1 = &current_location;
 	/* Connect the "clicked" signal of the button to our callback */
-	g_signal_connect (location_buton, "released", G_CALLBACK (location_callback), &wstruct_loc);
+	g_signal_connect (location_buton, "released", G_CALLBACK (location_callback), &callbacks_data);
 	gtk_button_set_label( (GtkButton*)location_buton, "Choose");
 	gtk_box_pack_start (GTK_BOX (hbox), location_buton, false, false, 10);
 }
@@ -917,12 +987,11 @@ Manga_GUI::hpack2_2()
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 10);
 	GtkWidget *dl_label = gtk_label_new("Download Manager ");
 	gtk_box_pack_start (GTK_BOX (hbox), dl_label, false, false, 10); //box,child,expand,fill,padding
-	dl_manager_combo = gtk_combo_box_new_text ();
 	
-	for(unsigned int i=0;i<download_managers.size();i++) {
+	for(unsigned int i=0;i<gui_config->cfg_download_managers.size();i++) {
 		gtk_combo_box_append_text( (GtkComboBox*) dl_manager_combo , 
-			download_managers[i].name.c_str());
-		if ( download_managers[i].selected )
+			gui_config->cfg_download_managers[i].name.c_str());
+		if ( gui_config->cfg_download_managers[i].selected )
 			gtk_combo_box_set_active( (GtkComboBox*)  dl_manager_combo, i );
 	}
 
@@ -937,13 +1006,10 @@ Manga_GUI::hpack2_2()
 	gtk_box_pack_start (GTK_BOX (hbox), select_button, false, false, 10);
 	gtk_box_pack_start (GTK_BOX (hbox), delete_button, false, false, 10);
 
-	dl_mngr_callback_data.DL = &download_managers;
-	dl_mngr_callback_data.D1 = dl_manager_combo;
-
 	g_signal_connect (select_button, "released", 
-		G_CALLBACK (dl_manager_callback), &dl_mngr_callback_data);
+		G_CALLBACK (dl_manager_callback), &callbacks_data);
 	g_signal_connect (delete_button, "released", 
-		G_CALLBACK (del_dlmngr_callback), &dl_mngr_callback_data);
+		G_CALLBACK (del_dlmngr_callback), &callbacks_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -957,9 +1023,7 @@ Manga_GUI::hpack2_3()
 	GtkWidget *label_add = gtk_label_new("Add a DL Manager");
 	gtk_box_pack_start (GTK_BOX (hbox), label_add, false, false, 10); //box,child,expand,fill,padding
 
-	name_dl     =  gtk_entry_new();
 	gtk_entry_set_text( (GtkEntry*) name_dl, "Name" );
-	command_dl  =  gtk_entry_new();
 	gtk_entry_set_text( (GtkEntry*) command_dl, "Command" );
 
 	GtkWidget *add_dl_button = gtk_button_new();
@@ -969,14 +1033,8 @@ Manga_GUI::hpack2_3()
 	gtk_box_pack_start (GTK_BOX (hbox), command_dl, true, true, 2);
 	gtk_box_pack_start (GTK_BOX (hbox), add_dl_button, false, false, 10);
 
-	dl_mngr_callback_data.DL = &download_managers;
-	dl_mngr_callback_data.D1 = dl_manager_combo;
-	dl_mngr_callback_data.D2 = name_dl;
-	dl_mngr_callback_data.D3 = command_dl;
-	dl_mngr_callback_data.DB = db;
-
 	g_signal_connect (add_dl_button, "released", 
-		G_CALLBACK (add_dlmngr_callback), &dl_mngr_callback_data);
+		G_CALLBACK (add_dlmngr_callback), &callbacks_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -989,10 +1047,13 @@ Manga_GUI::hpack2_4()
 	GtkWidget *label_provider = gtk_label_new("Provider        ");
 	gtk_box_pack_start (GTK_BOX (hbox), label_provider, false, false, 10); //box,child,expand,fill,padding
 
-	provider_combo = gtk_combo_box_new_text ();
 
-	gtk_combo_box_append_text( (GtkComboBox*) provider_combo , "mangareader");
-	gtk_combo_box_append_text( (GtkComboBox*) provider_combo, "mangapark");
+	std::vector<std::string> all_available_providers = factory.show_providers();
+	for ( auto i: all_available_providers) {
+		gtk_combo_box_append_text( (GtkComboBox*) provider_combo , i.c_str());
+	}
+	//set the first one as default
+	//TODO : set the default in the config instead
 	gtk_combo_box_set_active( (GtkComboBox*) provider_combo, 0);
 
 	gtk_box_pack_start (GTK_BOX (hbox), provider_combo, true, true, 10); //box,child,expand,fill,padding
@@ -1009,12 +1070,8 @@ Manga_GUI::hpack2_5()
 	gtk_button_set_label( (GtkButton*)save_button, "Save Configs");
 	gtk_box_pack_start (GTK_BOX (hbox), save_button, true, true, 0);
 
-	dl_mngr_callback_data.DL = &download_managers;
-	dl_mngr_callback_data.DB = db;
-	dl_mngr_callback_data.S1 = &current_location;
-
 	g_signal_connect (save_button, "released", 
-		G_CALLBACK (save_cfg_callback), &dl_mngr_callback_data);
+		G_CALLBACK (save_cfg_callback), &callbacks_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1024,7 +1081,6 @@ Manga_GUI::hpack3_1()
 {
 	hbox = gtk_hbox_new (false,0);
 	gtk_box_pack_start(GTK_BOX (vbox3), hbox, false, false, 10);
-	queue_combo = gtk_combo_box_text_new();
 	GtkWidget *queue_label = gtk_label_new("Queue ");
 	gtk_box_pack_start (GTK_BOX  (hbox), queue_label, false, false, 10);
 	gtk_box_pack_start (GTK_BOX (hbox), queue_combo, true, true, 10);
@@ -1032,13 +1088,8 @@ Manga_GUI::hpack3_1()
 
 
 	/* callback from hpack_3() -- addtoqueue */
-	q_c_data.Q  = &queue;
-	q_c_data.D1 = texta; /*mgname*/
-	q_c_data.D2 = wheel; /*wheel1*/
-	q_c_data.D3 = wheel2; /*wheel2*/
-	q_c_data.D4 = queue_combo; /*combo*/
 	g_signal_connect (add_queue_buton, "released", 
-		G_CALLBACK (add_to_q_callback), &q_c_data);
+		G_CALLBACK (add_to_q_callback), &callbacks_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1049,13 +1100,10 @@ Manga_GUI::hpack3_2()
 	hbox = gtk_hbox_new (false,0);
 	gtk_box_pack_start(GTK_BOX (vbox3), hbox, false, false, 10);
 	GtkWidget *change_q_name_label = gtk_label_new("Manga ");
-	q_name_entry = gtk_entry_new();
 	gtk_entry_set_text( (GtkEntry*) q_name_entry, "manga name");
 	gtk_entry_set_editable( (GtkEntry*) q_name_entry, false);
 	GtkWidget *change_q_start_label = gtk_label_new("Start ");
-	q_start_entry = gtk_spin_button_new_with_range(1,2000,1);
 	GtkWidget *change_q_end_label = gtk_label_new("End ");
-	q_end_entry = gtk_spin_button_new_with_range(1,2000,1);
 
 	gtk_box_pack_start (GTK_BOX (hbox), change_q_name_label, false, false, 10);
 	gtk_box_pack_start ( GTK_BOX(hbox), q_name_entry, true, true, 3);
@@ -1067,13 +1115,8 @@ Manga_GUI::hpack3_2()
 //	g_signal_connect (select_button, "released", G_CALLBACK (dl_manager_callback), &dl_mngr_callback_data);
 //
 
-	q_combo_data.Q  = &queue;
-	q_combo_data.D1 = q_name_entry;
-	q_combo_data.D2 = q_start_entry;
-	q_combo_data.D3 = q_end_entry;
-	q_combo_data.D4 = queue_combo;
 	g_signal_connect (queue_combo, "changed", 
-		G_CALLBACK (select_q_callback), &q_combo_data);
+		G_CALLBACK (select_q_callback), &callbacks_data);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1092,45 +1135,14 @@ Manga_GUI::hpack3_3()
 	gtk_box_pack_start ( GTK_BOX(hbox), delete_q, true, true, 10);
 
 
-	q_combo_data.Q  = &queue;
-	q_combo_data.D1 = q_name_entry;
-	q_combo_data.D2 = q_start_entry;
-	q_combo_data.D3 = q_end_entry;
-	q_combo_data.D4 = queue_combo;
 	g_signal_connect( change_q, "released", 
-		G_CALLBACK (change_q_callback), &q_combo_data);
+		G_CALLBACK (change_q_callback), &callbacks_data);
 	g_signal_connect (delete_q, "released", 
-		G_CALLBACK (delete_q_callback), &q_combo_data);
+		G_CALLBACK (delete_q_callback), &callbacks_data);
 
-
-	/* download and stop buttons callbacks */
-	wstruct.S1    = &current_location;
-	wstruct.DL    = &download_managers;
-	wstruct.Q     = &queue;
-	wstruct.D1    = queue_combo;
-	wstruct.D2    = q_name_entry;
-	wstruct.D3    = q_start_entry;
-	wstruct.D4    = q_end_entry;
-	wstruct.D5    = pbar1;
-	wstruct.D6    = pbar2;
-	wstruct.D7    = image_buton;
-	wstruct.D8    = stat_label;
-	wstruct.D9    = provider_combo;
-	wstruct.ISDL  = &downloader_state;
-	wstruct.DLDER_reader = &downloader_reader;
-	wstruct.DLDER_park   = &downloader_park;
-	wstruct.CUR_PROV = &current_provider;
-	wstruct.D10   = win;
-
-	revert_struct.S1 = &current_location;
-	revert_struct.D1 = location_text;
-	revert_struct.DB = db;
-	revert_struct.D2 = dl_manager_combo;
-	revert_struct.DL = &download_managers;
-	g_signal_connect (revert_item, "activate", G_CALLBACK(rever_callback), &revert_struct);
-
-	g_signal_connect (image_buton, "released", G_CALLBACK (download_callback), &wstruct);
-	g_signal_connect (stop_button, "released", G_CALLBACK (stop_callback), &wstruct);
+	g_signal_connect (revert_item, "activate", G_CALLBACK(rever_callback), &callbacks_data);
+	g_signal_connect (image_buton, "released", G_CALLBACK (download_callback), &callbacks_data);
+	g_signal_connect (stop_button, "released", G_CALLBACK (stop_callback), &callbacks_data);
 
 
 }
@@ -1141,8 +1153,6 @@ void
 Manga_GUI::draw_main_win()
 {
 	/* Start */
-	/* Create the main window */
-	win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	/* When the window is given the "delete-event" signal (this is given
 	* by the window manager, usually by the "close" option, or on the
 	* titlebar), we ask it to call the delete_event () function
@@ -1160,10 +1170,10 @@ Manga_GUI::draw_main_win()
 	gtk_window_set_title (GTK_WINDOW (win), "Manga Downloader");
 	gtk_window_set_position (GTK_WINDOW (win), GTK_WIN_POS_CENTER);
 	gtk_widget_realize (win);
-	accel_group            =gtk_accel_group_new ();
 	/* Attach the new accelerator group to the window. */
 	gtk_window_add_accel_group (GTK_WINDOW (win), accel_group);
 	/* Start */
+	gtk_widget_show_all (win);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
@@ -1187,19 +1197,10 @@ Manga_GUI::pack_in_notebook()
 
 /* Public function called to Display the whole GUI and start the procedures */
 void
-Manga_GUI::Display(int argc, char *argv[])
+Manga_GUI::Display()
 {
-	/* Initialize GTK+ */
-	g_log_set_handler ("Gtk", G_LOG_LEVEL_WARNING, (GLogFunc) gtk_false, NULL);
-	gtk_init (&argc, &argv);
-	g_log_set_handler ("Gtk", G_LOG_LEVEL_WARNING, g_log_default_handler, NULL);
 	/* draw main window */
 	draw_main_win();
-	/* vbox -- contains 7 hbox */
-	vbox = gtk_vbox_new (false,0);
-	vbox2 = gtk_vbox_new(false,0);
-	vbox3 = gtk_vbox_new(false,0);
-	mainvbox = gtk_vbox_new(false,0);
 	/* insert it into the win */
 	/* top menu */
 	hpack_1();
@@ -1243,11 +1244,3 @@ Manga_GUI::Display(int argc, char *argv[])
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
-/* Testing in the main */
-int main (int argc, char *argv[])
-{
-	Manga_GUI MG_DL;
-	MG_DL.Display(argc, argv);
-	return 0;
-}
-/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */

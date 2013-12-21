@@ -1,11 +1,11 @@
-CPPFLAGS=-g -std=c++11 -Wall
-LDFLAGS=-g
-LDLIBS=-lpthread -lcurl
-SRC=testing3.cpp
-OUT=test browser.o dl_facto.o dlder.o mgreader.o mgpark.o
+CPPFLAGS=-g -std=c++11 -Wall `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
+LDFLAGS=-g -O3  `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
+LDLIBS=-lpthread -lcurl -lsqlite3 `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
+SRC=testing6.cpp
+OUT=test browser.o dl_facto.o dlder.o mgreader.o mgpark.o gui.o config.o
 RM=rm -f
 
-all: browser.o dlder.o mgreader.o mgpark.o dl_facto.o 
+all: browser.o dlder.o mgreader.o mgpark.o dl_facto.o  gui.o config.o
 	g++ $(SRC) $(LDLIBS) -o $(OUT)
 
 browser.o:
@@ -22,6 +22,12 @@ mgpark.o:
 
 dl_facto.o:
 	g++ $(CPPFLAGS)  manager/dlder/dl_facto.cpp -c -o dl_facto.o
+
+gui.o:
+	g++ $(CPPFLAGS)  manager/gui/gui.cpp -c -o gui.o
+
+config.o:
+	g++ $(CPPFLAGS) manager/cfg/config.cpp -c -o config.o
 
 clean:
 	$(RM) *.o

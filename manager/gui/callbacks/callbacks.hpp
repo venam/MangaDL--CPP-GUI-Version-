@@ -1,6 +1,5 @@
 /*
- *
- * COPYRIGHT AND PERMISSION NOTICE
+COPYRIGHT AND PERMISSION NOTICE
 
 Copyright (c) 2013, Patrick Louis <patrick at unixhub.net>
 
@@ -31,105 +30,69 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Except as contained in this notice, the name of a copyright holder shall not
 be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
+ */ 
 
- * Manages the configs in the sqlite3 DB
- *
- * CREATE TABLE location ( mg_location VARCHAR);
- *
- * CREATE TABLE mg_list (mgname VARCHAR, mgchapter VARCHAR, mglastdate VARCHAR);
- *
- * CREATE TABLE dl_managers (name VARCHAR UNIQUE PRIMARY KEY,command VARCHAR UNIQUE, selected BOOL);
- *
- * CREATE TABLE provider ( name VARCHAR ); 
- * contains the current provider "mangareader"
- *
- * TODO:
- *     replaces [INPUT] by the input file name and [OUTPUT] by the output name
- *
- */
+#ifndef INCLUDED_CALLBACKS
+#define INCLUDED_CALLBACKS
+
+#include "../../cfg/config.hpp"
+#include "../../dlder/dlder.hpp"
 
 
-#ifndef CONFIG_HPP_INCLUDED
-#define CONFIG_HPP_INCLUDED
-
-
-#include <stdio.h>
-#include <sqlite3.h>
-#include <string>
-#include <string.h>
-#include <vector>
-#include <iostream>
-
-#define DB_NAME "manager/cfg/config.db"
-#define DEFAULT_LOC ""
-
-
-struct mg_list {
-	std::string mgname;
-	std::string mgchapter;
-	std::string mglastdate;
-};
-
-struct dl_mngr {
-	std::string name;
-	std::string command;
-	bool selected;
-};
-
-struct manga_queue_data {
-	std::string manga_name;
-	std::string start_chapter;
-	std::string end_chapter;
-};
-
-class config {
-	private:
-		sqlite3 *db;
-		char* zErrMsg;
-		int rc;
-		static int exec_callback(void* NotUsed, int argc, char** argv, char** azColName);
-		/* needed from the GUI */
-
+class callbacks {
 	public:
-		//temporary configs -- I know fuck this shit
+		//the widgets
+		GtkWidget*                     callbacks_win;
+		GtkWidget*                     callbacks_vbox;
+		GtkWidget*                     callbacks_vbox2;
+		GtkWidget*                     callbacks_vbox3;
+		GtkWidget*                     callbacks_mainvbox;
+		GtkWidget*                     callbacks_hbox;
+		GtkWidget*                     callbacks_stop_button;
+		GtkWidget*                     callbacks_label;
+		GtkWidget*                     callbacks_stat_label;
+		GtkWidget*                     callbacks_image_buton;
+		GtkWidget*                     callbacks_add_queue_buton;
+		GtkWidget*                     callbacks_imbox;
+		GtkWidget*                     callbacks_wheel;
+		GtkWidget*                     callbacks_wheel2;
+		GtkWidget*                     callbacks_texta;
+		GtkWidget*                     callbacks_location_text;
+		GtkWidget*                     callbacks_dl_manager_combo;
+		GtkWidget*                     callbacks_name_dl;
+		GtkWidget*                     callbacks_command_dl;
+		GtkWidget*                     callbacks_queue_combo;
+		GtkWidget*                     callbacks_q_name_entry;
+		GtkWidget*                     callbacks_q_start_entry;
+		GtkWidget*                     callbacks_q_end_entry;
+		GtkWidget*                     callbacks_pbar1;
+		GtkWidget*                     callbacks_pbar2;
+		GtkWidget*                     callbacks_provider_combo;
+		GtkWidget*                     callbacks_revert_item;
+		GtkAccelGroup*                 callbacks_accel_group;
+
+
+		//the state of the download
+		int*                           callbacks_downloader_state;
+
+		//the downloader
+		dlder*                         callbacks_downloader;
+
+		dl_facto*                     callbacks_factory;
+
+		//config which contains the temporary data and the revert data
+		/*
 		std::string                   cfg_current_location;
 		std::vector<dl_mngr>          cfg_download_managers;
 		std::vector<manga_queue_data> cfg_queue;
 
-		std::string                   cfg_current_provider;
-
 		std::string                   cfg_revert_current_location;
 		std::vector<dl_mngr>          cfg_revert_download_managers;
-		/* -- */
+		*/
+		config*                        callbacks_config;
 
-
-		config();
-		~config();
-		void exec(std::string command);
-		std::string get_mg_location();
-		void update_mg_location(const std::string new_location);
-		std::string get_provider();
-		void update_provider(const std::string new_provider);
-		std::vector <dl_mngr> db_get_dl_managers();
-		void db_add_dl_manager(const std::string name, const std::string command, const bool selected);
-		void db_update_dl_manager(const std::vector <dl_mngr> new_managers);
-		void remove_dl_manager(const std::string name);
-		std::vector <mg_list> get_mg_list();
-		
-		void set_current_location(std::string user_current_location);
-		std::string get_current_location();
-		void set_download_managers(std::vector<dl_mngr> user_download_managers);
-		std::vector<dl_mngr> get_download_managers();
-		void set_queue(std::vector<manga_queue_data> user_queue);
-		std::vector<manga_queue_data> get_queue();
-	
-		void set_current_provider(std::string user_prov);
-		std::string get_current_provider();
-		void set_revert_current_location(std::string user_revert_loc);
-		std::string get_revert_current_location();
-		void set_revert_download_managers(std::vector<dl_mngr> user_dls);
-		std::vector<dl_mngr> get_revert_download_managers();
 };
+
 
 #endif
 

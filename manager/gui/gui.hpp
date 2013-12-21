@@ -37,12 +37,12 @@ in this Software without prior written authorization of the copyright holder.
  * TODO:
  *  Clear queue button
  *  How to
- *  language for the external dl manager
- *  check if the download manager command works fine
- *  check for 404 errors
+ *  error handling in the dlder (check if the download manager command works fine
+ *  check for 404 errors )
  *  Add more providers
  *  Add the Updater to it
- *  Skip chapter button
+ *  Skip chapter button 
+ *  when the add to queue is pressed the input fields are cleared
  *  Write a Makefile
  *
  */ 
@@ -59,55 +59,15 @@ in this Software without prior written authorization of the copyright holder.
 
 #include "../cfg/config.hpp"
 #include "../dlder/dl_facto.hpp"
-
-//just saying that it exists somewhere
-struct manga_queue_data;
-
-typedef struct callback_data {
-	GtkWidget     *D1;
-	GtkWidget     *D2;
-	GtkWidget     *D3;
-	GtkWidget     *D4;
-	GtkWidget     *D5;
-	GtkWidget     *D6;
-	GtkWidget     *D7;
-	GtkWidget     *D8;
-	std::string   *S1;
-	std::vector   <dl_mngr>*DL;
-	std::vector   <manga_queue_data>*Q;  /*the queue*/
-	mgreader      *DLDER_reader;
-	mgpark        *DLDER_park;
-	GtkWidget     *D9;
-	GtkWidget     *D10;
-	int           *CUR_PROV;
-	int           *ISDL;
-} callback_items;
-
-typedef struct slct_dl_manager {
-	GtkWidget   *D1;
-	GtkWidget   *D2;
-	GtkWidget   *D3;
-	std::vector <dl_mngr>*DL;
-	db_manager  DB;
-	std::string *S1;
-} select_dl_manager;
-
-typedef struct q_data {
-	GtkWidget        *D1; /*mgname*/
-	GtkWidget        *D2; /*wheel1*/
-	GtkWidget        *D3; /*wheel2*/
-	GtkWidget        *D4; /*combo*/
-	std::vector <manga_queue_data>*Q;  /*the queue*/
-} callback_q_data;
+#include "callbacks/callbacks.hpp"
 
 /* GUI Class handling all the GUI and Callbacks */
 class Manga_GUI {
 	public:
-		Manga_GUI();
+		Manga_GUI(int argc, char *argv[]);
 		~Manga_GUI();
-		void Display(int argc, char *argv[]);
+		void Display();
 
-	protected:
 	private:
 		GtkWidget         *win;
 		GtkWidget         *vbox;
@@ -137,22 +97,14 @@ class Manga_GUI {
 		GtkWidget         *provider_combo;
 		GtkWidget         *revert_item;
 		GtkAccelGroup     *accel_group;
-		callback_items    wstruct;
-		callback_items    wstruct_loc;
-		select_dl_manager revert_struct;
-		db_manager        db;
-		std::string       current_location;
-		select_dl_manager dl_mngr_callback_data;
-		std::vector       <dl_mngr>download_managers;
-		std::vector       <manga_queue_data>queue;
-		callback_q_data   q_c_data;
-		callback_q_data   q_combo_data;
-		mgreader          downloader_reader;
-		mgpark            downloader_park;
-
+		config*           gui_config;
+		dlder*            downloader;
 		int               downloader_state;
-		int               current_provider;
+		callbacks         callbacks_data;
+		dl_facto          factory;
 
+		void init_config                ( void                                              ) ;
+		void init_callbacks             ( void                                              ) ;
 		void draw_main_win              ( void                                              ) ;
 		void hpack_1                    ( void                                              ) ;
 		void hpack_2                    ( void                                              ) ;
@@ -178,6 +130,7 @@ class Manga_GUI {
 		static void about_this          ( GtkWidget *wid, GtkWidget *win                    ) ;
 		static gboolean delete_event    ( GtkWidget *widget, GdkEvent *event, gpointer data ) ;
 		static GtkWidget *xpm_label_box ( gchar *xpm_filename, gchar *label_text            ) ;
+
 		static void download_callback   ( GtkWidget *wid, gpointer user_data                ) ;
 		static void stop_callback       ( GtkWidget *wid, gpointer user_data                ) ;
 		static void location_callback   ( GtkWidget *wid, gpointer user_data                ) ;

@@ -54,7 +54,7 @@ in this Software without prior written authorization of the copyright holder.
 
 
 ///================constructor=======================================================///
-db_manager::db_manager()
+config::config()
 {
 	zErrMsg     = 0;
 	rc          = sqlite3_open(DB_NAME, &db);
@@ -70,7 +70,7 @@ db_manager::db_manager()
 
 
 ///==========================Destructor==============================================///
-db_manager::~db_manager()
+config::~config()
 {
 	sqlite3_close(db);
 }
@@ -79,7 +79,7 @@ db_manager::~db_manager()
 
 ///===============execute an sql query without returning anything====================///
 void
-db_manager::exec(std::string command)
+config::exec(std::string command)
 {
 	rc = sqlite3_exec(db, command.c_str(), exec_callback, 0, &zErrMsg);
 	if( rc!=SQLITE_OK ){
@@ -96,7 +96,7 @@ db_manager::exec(std::string command)
 
 ///================returns the current location to save the manga====================///
 std::string
-db_manager::get_mg_location()
+config::get_mg_location()
 {
 	std::string response = "";
 	char **pazResult;
@@ -132,7 +132,7 @@ db_manager::get_mg_location()
 
 ///============change the location of the manga======================================///
 void
-db_manager::update_mg_location(const std::string new_location)
+config::update_mg_location(const std::string new_location)
 {
 	this->exec("DELETE FROM location;");
 	this->exec("INSERT INTO LOCATION VALUES (\""+new_location+"\");");
@@ -142,7 +142,7 @@ db_manager::update_mg_location(const std::string new_location)
 
 ///================returns the current provider======================================///
 std::string
-db_manager::get_provider()
+config::get_provider()
 {
 	std::string response = "";
 	char **pazResult;
@@ -178,7 +178,7 @@ db_manager::get_provider()
 
 ///============change the provider ==================================================///
 void
-db_manager::update_provider(const std::string new_provider)
+config::update_provider(const std::string new_provider)
 {
 	this->exec("DELETE FROM provider;");
 	this->exec("INSERT INTO LOCATION VALUES (\""+new_provider+"\");");
@@ -188,7 +188,7 @@ db_manager::update_provider(const std::string new_provider)
 
 ///========return a struct with the dl manager related data==========================///
 std::vector <dl_mngr>
-db_manager::get_dl_managers()
+config::db_get_dl_managers()
 {
 	std::vector <dl_mngr> container;
 	dl_mngr temp_list;
@@ -240,7 +240,7 @@ db_manager::get_dl_managers()
 
 ///================add a new dl manager==============================================///
 void
-db_manager::add_dl_manager(
+config::db_add_dl_manager(
 	const std::string name, 
 	const std::string command, 
 	const bool selected)
@@ -257,7 +257,7 @@ db_manager::add_dl_manager(
 
 ///================update the dl manager from a dl manager list======================///
 void
-db_manager::update_dl_manager(const std::vector <dl_mngr> new_managers)
+config::db_update_dl_manager(const std::vector <dl_mngr> new_managers)
 {
 	this->exec("DELETE FROM dl_managers;");
 	for (auto  i: new_managers) {
@@ -275,7 +275,7 @@ db_manager::update_dl_manager(const std::vector <dl_mngr> new_managers)
 
 ///========remove a dl manager based on its name=====================================///
 void
-db_manager::remove_dl_manager(const std::string given_name)
+config::remove_dl_manager(const std::string given_name)
 {
 	this->exec("DELETE FROM dl_managers WHERE name=\""+given_name+"\";");
 }
@@ -284,7 +284,7 @@ db_manager::remove_dl_manager(const std::string given_name)
 
 ///==========to use later when the updater is done===================================///
 std::vector <mg_list>
-db_manager::get_mg_list()
+config::get_mg_list()
 {
 	std::vector <mg_list> container;
 	mg_list temp_list;
@@ -326,7 +326,7 @@ db_manager::get_mg_list()
 
 ///==================================================================================///
 void 
-db_manager::set_current_location(std::string user_current_location)
+config::set_current_location(std::string user_current_location)
 {
 	this->cfg_current_location = user_current_location;
 }
@@ -335,7 +335,7 @@ db_manager::set_current_location(std::string user_current_location)
 
 ///==================================================================================///
 std::string 
-db_manager::get_current_location()
+config::get_current_location()
 {
 	return this->cfg_current_location;
 }
@@ -344,7 +344,7 @@ db_manager::get_current_location()
 
 ///==================================================================================///
 void 
-db_manager::set_download_managers(std::vector<dl_mngr> user_download_managers)
+config::set_download_managers(std::vector<dl_mngr> user_download_managers)
 {
 	this->cfg_download_managers = user_download_managers;
 }
@@ -353,7 +353,7 @@ db_manager::set_download_managers(std::vector<dl_mngr> user_download_managers)
 
 ///==================================================================================///
 std::vector<dl_mngr> 
-db_manager::get_download_managers()
+config::get_download_managers()
 {
 	return this->cfg_download_managers;
 }
@@ -362,7 +362,7 @@ db_manager::get_download_managers()
 
 ///==================================================================================///
 void 
-db_manager::set_queue(std::vector<manga_queue_data> user_queue)
+config::set_queue(std::vector<manga_queue_data> user_queue)
 {
 	this->cfg_queue = user_queue;
 }
@@ -371,16 +371,70 @@ db_manager::set_queue(std::vector<manga_queue_data> user_queue)
 
 ///==================================================================================///
 std::vector<manga_queue_data> 
-db_manager::get_queue()
+config::get_queue()
 {
 	return this->cfg_queue;
 }
 ///==================================================================================///
 
 
+///==================================================================================///
+void 
+config::set_current_provider(std::string user_prov)
+{
+	this->cfg_current_provider = user_prov;
+}
+///==================================================================================///
+
+
+///==================================================================================///
+std::string 
+config::get_current_provider()
+{
+	return this->cfg_current_provider;
+}
+///==================================================================================///
+
+
+///==================================================================================///
+void 
+config::set_revert_current_location(std::string user_revert_loc)
+{
+	this->cfg_revert_current_location = user_revert_loc;
+}
+///==================================================================================///
+
+
+///==================================================================================///
+std::string 
+config::get_revert_current_location()
+{
+	return this->cfg_revert_current_location;
+}
+///==================================================================================///
+
+
+///==================================================================================///
+void 
+config::set_revert_download_managers(std::vector<dl_mngr> user_dls)
+{
+	this->cfg_revert_download_managers = user_dls;
+}
+///==================================================================================///
+
+
+///==================================================================================///
+std::vector<dl_mngr> 
+config::get_revert_download_managers()
+{
+	return this->cfg_revert_download_managers;
+}
+///==================================================================================///
+
+
 ///===============execute a query and outputs the result=============================///
 int
-db_manager::exec_callback(
+config::exec_callback(
 	void* NotUsed, 
 	int argc, 
 	char** argv, 

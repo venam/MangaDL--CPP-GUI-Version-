@@ -45,6 +45,7 @@ mgreader::mgreader(std::string manganame, std::string mg_location,
 {
 	fill_in_resolver();
 	mgreader_current_page_url     ="http://www.mangareader.net/"+ dlder_manganame+"/"+dlder_start +"/";
+	dlder_current_page        = 2;
 	//vars
 	mgreader_next_link        = "";
 }
@@ -58,8 +59,7 @@ mgreader::mgreader() : dlder()
 	mgreader_current_page_url    ="http://www.mangareader.net/";
 	//vars
 	mgreader_next_link        = "";
-
-
+	dlder_current_page        = 2;
 }
 ///=================================================================================///
 
@@ -71,6 +71,7 @@ mgreader::init(std::string manganame, std::string mg_location,
 {
 	dlder::init(manganame,mg_location,external_dl_mgr, start, end);
 	mgreader_current_page_url     ="http://www.mangareader.net/"+ dlder_manganame+"/"+dlder_start +"/";
+	dlder_current_page        = 2;
 	std::cout<<mgreader_current_page_url<<"\n";
 }
 ///=================================================================================///
@@ -238,9 +239,10 @@ mgreader::increase_chapter()
 	dlder_nb_of_pages          = 0;
 	dlder_current_page         = 1;
 	dlder_img                  = "000";
-	dlder_current_chapter      = dlder_current_chapter+1;
-	mgreader_current_page_url  = "http://www.mangareader.net/"+ dlder_manganame +"/"+ to_string(dlder_current_chapter) +"/"+ to_string( dlder_current_page);
-	dlder_current_page++;
+	dlder_current_chapter++;
+	mgreader_next_link         = "http://www.mangareader.net/"+ dlder_manganame +"/"+ to_string(dlder_current_chapter) +"/";
+
+	dlder_current_page         = 2;
 }
 ///=================================================================================///
 
@@ -287,7 +289,7 @@ mgreader::scrap_page()
 		else {
 		}
 	}
-	mgreader_next_link = "http://www.mangareader.net/"+ dlder_manganame +"/"+ dlder_start +"/"+ to_string(dlder_current_page);
+	mgreader_next_link = "http://www.mangareader.net/"+ dlder_manganame +"/"+ to_string(dlder_current_chapter)  +"/"+ to_string(dlder_current_page);
 }
 ///=================================================================================///
 
