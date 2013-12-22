@@ -3,7 +3,7 @@
 A manga downloader with a GTK frontend.
 It currently support mangareader and mangapark.
 
-This branch will make the mangaDL pluggable and more stable.
+The mangaDL is now pluggable and *little* more stable.
 
 Depends on: libcURL, sqlite3, and GTK.
 
