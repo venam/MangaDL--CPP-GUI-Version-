@@ -36,7 +36,7 @@ in this Software without prior written authorization of the copyright holder.
 
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
-Manga_GUI::~Manga_GUI()
+gui::~gui()
 {
 	delete gui_config;
 	delete downloader;
@@ -44,13 +44,14 @@ Manga_GUI::~Manga_GUI()
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 /* Initialize the GtkWidget Elements */
-Manga_GUI::Manga_GUI(int argc, char *argv[]) 
+gui::gui(int argc, char *argv[]) 
 {
 	/* Initialize GTK+ */
 	g_log_set_handler ("Gtk", G_LOG_LEVEL_DEBUG, (GLogFunc) gtk_false, NULL);
 	gtk_init (&argc, &argv);
 	g_log_set_handler ("Gtk", G_LOG_LEVEL_DEBUG, g_log_default_handler, NULL);
-
+	gui_config           = new config();
+	init_config();
 
 	/* the main win */
 	win                  = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -73,7 +74,8 @@ Manga_GUI::Manga_GUI(int argc, char *argv[])
 	wheel                = gtk_spin_button_new_with_range(1,2000,1);
 	wheel2               = gtk_spin_button_new_with_range(1,2000,1);
 	texta                = gtk_entry_new();
-	location_text        = gtk_label_new( "" );
+	std::string loc_str  = "Downloader Location "+ gui_config->cfg_current_location;
+	location_text        = gtk_label_new( loc_str.c_str() );
 	dl_manager_combo     = gtk_combo_box_new_text ();
 	name_dl              = gtk_entry_new();
 	command_dl           = gtk_entry_new();
@@ -87,7 +89,6 @@ Manga_GUI::Manga_GUI(int argc, char *argv[])
 	revert_item          = gtk_menu_item_new_with_mnemonic ("_Revert Configs");
 	accel_group          = gtk_accel_group_new ();
 
-	gui_config           = new config();
 	//queue              = ;
 	//factory
 	
@@ -96,14 +97,13 @@ Manga_GUI::Manga_GUI(int argc, char *argv[])
 	//current_location  = db.get_mg_location();
 	//download_managers = db.get_dl_managers();
 	downloader_state     = 0;
-	init_config();
 	init_callbacks();
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 /* initialize config */
 void
-Manga_GUI::init_config()
+gui::init_config()
 {
 	gui_config->set_current_location(gui_config->get_mg_location());
 	gui_config->set_revert_current_location(gui_config->get_mg_location());
@@ -117,7 +117,7 @@ Manga_GUI::init_config()
 
 /* initialize the callbacks */
 void 
-Manga_GUI::init_callbacks()
+gui::init_callbacks()
 {
 	callbacks_data.callbacks_win = win;
 	callbacks_data.callbacks_vbox = vbox;
@@ -174,7 +174,7 @@ Manga_GUI::init_callbacks()
 
 /* About Pop Up */
 void 
-Manga_GUI::about_this (GtkWidget *wid, GtkWidget *win)
+gui::about_this (GtkWidget *wid, GtkWidget *win)
 {
 	GtkWidget *dialog = NULL;
 	dialog            = gtk_message_dialog_new (GTK_WINDOW (win), 
@@ -189,7 +189,7 @@ Coded By Venam \n\
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 void 
-Manga_GUI::wpopup( std::string message )
+gui::wpopup( std::string message )
 {
 	GtkWidget *dialog1 = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, 
 		GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE, message.c_str());
@@ -200,7 +200,7 @@ Manga_GUI::wpopup( std::string message )
 
 /* Delete Event to quit the GUI */
 gboolean 
-Manga_GUI::delete_event( GtkWidget *widget, GdkEvent *event, gpointer data )
+gui::delete_event( GtkWidget *widget, GdkEvent *event, gpointer data )
 {
 	/* If you return FALSE in the "delete-event" signal handler,
 	 * GTK will emit the "destroy" signal. Returning TRUE means
@@ -218,7 +218,7 @@ Manga_GUI::delete_event( GtkWidget *widget, GdkEvent *event, gpointer data )
 
 /* Set the image in a box */
 GtkWidget *
-Manga_GUI::xpm_label_box( gchar *xpm_filename, gchar *label_text )
+gui::xpm_label_box( gchar *xpm_filename, gchar *label_text )
 {
 	GtkWidget *box;
 	GtkWidget *image;
@@ -238,12 +238,12 @@ Manga_GUI::xpm_label_box( gchar *xpm_filename, gchar *label_text )
 
 /* call back used when the download button is pressed */
 void 
-Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
+gui::download_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 
 	/* nothing state */
-	if( user_callbacks->callbacks_downloader_state == 0) {
+	if( *user_callbacks->callbacks_downloader_state == 0) {
 		
 		/* Check if the queue is empty */
 		if ( (user_callbacks->callbacks_config->cfg_queue).size() == 0 ) {
@@ -286,7 +286,7 @@ Manga_GUI::download_callback(GtkWidget *wid, gpointer user_data)
 
 /* function called as a new thread */
 void*
-Manga_GUI::start_download( void *user_data)
+gui::start_download( void *user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	std::string download_command = "default";
@@ -337,7 +337,7 @@ Manga_GUI::start_download( void *user_data)
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar1, 0.001);
 	gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar2, 0.001);
 	gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_stat_label, " " );
-	user_callbacks->callbacks_downloader_state  = 0;
+	*user_callbacks->callbacks_downloader_state  = 0;
 	gtk_widget_show_all (user_callbacks->callbacks_win);
 
 	/* here, the timeout thing that updates the progress bars should have stopped */
@@ -347,13 +347,13 @@ Manga_GUI::start_download( void *user_data)
 
 /* update the bars during the download */
 gint
-Manga_GUI::update_bars( gpointer user_data )
+gui::update_bars( gpointer user_data )
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 
 	/* stop updating when the queue is empty */
 	//if ( (*w->Q).size() == 0 || (*w->DLDER).finished() ||
-	if ( user_callbacks->callbacks_downloader_state == 0 ) { 
+	if ( *user_callbacks->callbacks_downloader_state == 0 ) { 
 		return false;
 	}
 	else {
@@ -393,12 +393,12 @@ Manga_GUI::update_bars( gpointer user_data )
 
 /* call back used when the download button is pressed */
 void 
-Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
+gui::stop_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	
 	/* if we are not in the "nothing state" */
-	if(user_callbacks->callbacks_downloader_state!=0) {
+	if(*user_callbacks->callbacks_downloader_state!=0) {
 		GtkWidget *dialog1 = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, 
 			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "Stoping download");
 		gtk_window_set_position (GTK_WINDOW (dialog1), GTK_WIN_POS_CENTER);
@@ -412,7 +412,7 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 		gtk_progress_bar_set_fraction( (GtkProgressBar*)user_callbacks->callbacks_pbar2, 0.001);
 		gtk_button_set_label( (GtkButton*)user_callbacks->callbacks_image_buton, "Download");
 		gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_stat_label, "  " );
-		user_callbacks->callbacks_downloader_state = 0;
+		*user_callbacks->callbacks_downloader_state = 0;
 		user_callbacks->callbacks_downloader->stop();
 		/* set the current provider to the one that is selected atm */
 		user_callbacks->callbacks_config->cfg_current_provider = 
@@ -427,7 +427,7 @@ Manga_GUI::stop_callback(GtkWidget *wid, gpointer user_data)
 
 /* pop up to select the location where the manga will be drop into */
 void 
-Manga_GUI::location_callback(GtkWidget *wid, gpointer user_data)
+gui::location_callback(GtkWidget *wid, gpointer user_data)
 {
 	std::string dirpath = "";
 	callbacks* user_callbacks = (callbacks*) user_data;
@@ -448,7 +448,7 @@ Manga_GUI::location_callback(GtkWidget *wid, gpointer user_data)
 
 /* choose the download manager */
 void 
-Manga_GUI::dl_manager_callback(GtkWidget *wid, gpointer user_data)
+gui::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 
@@ -475,7 +475,7 @@ Manga_GUI::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 
 /* Add a Download manager */
 void 
-Manga_GUI::add_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
+gui::add_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 
@@ -514,7 +514,7 @@ Manga_GUI::add_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 
 /* Remove a Download manager */
 void 
-Manga_GUI::del_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
+gui::del_dlmngr_callback(GtkWidget *wid, gpointer user_data) 
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	int position_to_delete  = gtk_combo_box_get_active ( (GtkComboBox*) user_callbacks->callbacks_dl_manager_combo );
@@ -540,7 +540,7 @@ Manga_GUI::del_dlmngr_callback(GtkWidget *wid, gpointer user_data)
 
 /* Save the configs in the database */
 void 
-Manga_GUI::save_cfg_callback(GtkWidget *wid, gpointer user_data)
+gui::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	user_callbacks->callbacks_config->update_mg_location( user_callbacks->callbacks_config->cfg_current_location );
@@ -558,7 +558,7 @@ Manga_GUI::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 
 /* Revert the config */
 void
-Manga_GUI::rever_callback(GtkWidget *wid, gpointer user_data)
+gui::rever_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	/* revert the location */
@@ -586,7 +586,7 @@ Manga_GUI::rever_callback(GtkWidget *wid, gpointer user_data)
 
 /* Add the manga selected to the queue */
 void 
-Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
+gui::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 
@@ -638,7 +638,7 @@ Manga_GUI::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 
 /* change the widget according to the selected manga in the queue */
 void 
-Manga_GUI::select_q_callback(GtkWidget *wid, gpointer user_data )
+gui::select_q_callback(GtkWidget *wid, gpointer user_data )
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
@@ -663,7 +663,7 @@ Manga_GUI::select_q_callback(GtkWidget *wid, gpointer user_data )
 
 /* change the queue */
 void 
-Manga_GUI::change_q_callback(GtkWidget *wid, gpointer user_data )
+gui::change_q_callback(GtkWidget *wid, gpointer user_data )
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
@@ -713,7 +713,7 @@ Manga_GUI::change_q_callback(GtkWidget *wid, gpointer user_data )
 
 /* delete from the queue */
 void 
-Manga_GUI::delete_q_callback(GtkWidget *wid, gpointer user_data )
+gui::delete_q_callback(GtkWidget *wid, gpointer user_data )
 {
 	callbacks* user_callbacks = (callbacks*) user_data;
 	/* starting from 0 */
@@ -743,7 +743,7 @@ Manga_GUI::delete_q_callback(GtkWidget *wid, gpointer user_data )
 
 /* fill the file menu */
 void
-Manga_GUI::file_menu_fill(GtkWidget *menubar)
+gui::file_menu_fill(GtkWidget *menubar)
 {
 	GtkWidget *file_menu = gtk_menu_item_new_with_mnemonic ("_File");
 	GtkWidget *item_container = gtk_menu_new ();
@@ -768,7 +768,7 @@ Manga_GUI::file_menu_fill(GtkWidget *menubar)
 
 /* fill the config menu */
 void
-Manga_GUI::config_menu_fill(GtkWidget *menubar)
+gui::config_menu_fill(GtkWidget *menubar)
 {
 	/* location */
 	GtkWidget *config_menu = gtk_menu_item_new_with_mnemonic ("_Configs");
@@ -801,7 +801,7 @@ Manga_GUI::config_menu_fill(GtkWidget *menubar)
 
 /* fill the updater menu */
 void
-Manga_GUI::updater_menu_fill(GtkWidget *menubar)
+gui::updater_menu_fill(GtkWidget *menubar)
 {
 	GtkWidget *updater_menu = gtk_menu_item_new_with_mnemonic ("_Updater");
 	GtkWidget *item_container = gtk_menu_new ();
@@ -819,7 +819,7 @@ Manga_GUI::updater_menu_fill(GtkWidget *menubar)
 
 /* fill the help menu */
 void
-Manga_GUI::help_menu_fill(GtkWidget *menubar)
+gui::help_menu_fill(GtkWidget *menubar)
 {
 	GtkWidget *help_menu = gtk_menu_item_new_with_mnemonic ("_Help");
 	GtkWidget *item_container = gtk_menu_new ();
@@ -843,7 +843,7 @@ Manga_GUI::help_menu_fill(GtkWidget *menubar)
 
 /* Draw the top hpack */
 void
-Manga_GUI::hpack_1()
+gui::hpack_1()
 {
 	GtkWidget *menubar  = gtk_menu_bar_new();
 	file_menu_fill(menubar);
@@ -856,7 +856,7 @@ Manga_GUI::hpack_1()
 
 /* Draw the Program Name label - 2nd pack - Program Status */
 void
-Manga_GUI::hpack_2()
+gui::hpack_2()
 {
 	/* create a new label. */
 	label = gtk_label_new ("MangaDL");
@@ -874,7 +874,7 @@ Manga_GUI::hpack_2()
 
 /* Draw the text box where you insert the manga name*/
 void 
-Manga_GUI::hpack_3()
+gui::hpack_3()
 {
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 0);
 
@@ -892,7 +892,7 @@ Manga_GUI::hpack_3()
 
 /* The wheels */
 void
-Manga_GUI::hpack_4()
+gui::hpack_4()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, true, 5);
@@ -912,7 +912,7 @@ Manga_GUI::hpack_4()
 
 /* progress bar - chapter */
 void
-Manga_GUI::hpack_5()
+gui::hpack_5()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 10);
@@ -926,7 +926,7 @@ Manga_GUI::hpack_5()
 
 /* progress bar - page */
 void
-Manga_GUI::hpack_6()
+gui::hpack_6()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox), hbox, true, false, 10);
@@ -940,7 +940,7 @@ Manga_GUI::hpack_6()
 
 /* Buttons at the bottom */
 void 
-Manga_GUI::hpack_7()
+gui::hpack_7()
 {
 	///hbox
 	hbox = gtk_hbox_new (TRUE,4);
@@ -963,7 +963,7 @@ Manga_GUI::hpack_7()
 
 /* Draw the text box with the location */
 void 
-Manga_GUI::hpack2_1()
+gui::hpack2_1()
 {
 	hbox = gtk_hbox_new (false,20);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 20);
@@ -981,7 +981,7 @@ Manga_GUI::hpack2_1()
 
 /* Draw a combo box with all the dl_managers name + 2 buttons select and delete */
 void 
-Manga_GUI::hpack2_2()
+gui::hpack2_2()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 10);
@@ -1015,7 +1015,7 @@ Manga_GUI::hpack2_2()
 
 /* Draw 2 text box, name of dl, dl command + a button to add */
 void 
-Manga_GUI::hpack2_3()
+gui::hpack2_3()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 10);
@@ -1040,7 +1040,7 @@ Manga_GUI::hpack2_3()
 
 /* List of Providers -- Mangareader (default) and Mangapark */
 void 
-Manga_GUI::hpack2_4()
+gui::hpack2_4()
 {
 	hbox = gtk_hbox_new (false,10);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, false, false, 10);
@@ -1062,7 +1062,7 @@ Manga_GUI::hpack2_4()
 
 /* Draw the Save configs button */
 void
-Manga_GUI::hpack2_5()
+gui::hpack2_5()
 {
 	hbox = gtk_hbox_new (true,3);
 	gtk_box_pack_start(GTK_BOX (vbox2), hbox, true, true, 0);
@@ -1077,7 +1077,7 @@ Manga_GUI::hpack2_5()
 
 /* Queue part */
 void
-Manga_GUI::hpack3_1()
+gui::hpack3_1()
 {
 	hbox = gtk_hbox_new (false,0);
 	gtk_box_pack_start(GTK_BOX (vbox3), hbox, false, false, 10);
@@ -1095,7 +1095,7 @@ Manga_GUI::hpack3_1()
 
 /* Queue part */
 void
-Manga_GUI::hpack3_2()
+gui::hpack3_2()
 {
 	hbox = gtk_hbox_new (false,0);
 	gtk_box_pack_start(GTK_BOX (vbox3), hbox, false, false, 10);
@@ -1122,7 +1122,7 @@ Manga_GUI::hpack3_2()
 
 /* Change queue */
 void
-Manga_GUI::hpack3_3()
+gui::hpack3_3()
 {
 	hbox = gtk_hbox_new (false,0);
 	gtk_box_pack_start(GTK_BOX (vbox3), hbox, false, false, 10);
@@ -1150,7 +1150,7 @@ Manga_GUI::hpack3_3()
 
 /* Draw the main window of the program */
 void
-Manga_GUI::draw_main_win()
+gui::draw_main_win()
 {
 	/* Start */
 	/* When the window is given the "delete-event" signal (this is given
@@ -1179,7 +1179,7 @@ Manga_GUI::draw_main_win()
 
 /* put stuff inside the notebook */
 void
-Manga_GUI::pack_in_notebook()
+gui::pack_in_notebook()
 {
 	GtkWidget *notebook        = gtk_notebook_new ();
 	GtkWidget *tab_labl_main   = gtk_label_new("Main");
@@ -1197,7 +1197,7 @@ Manga_GUI::pack_in_notebook()
 
 /* Public function called to Display the whole GUI and start the procedures */
 void
-Manga_GUI::Display()
+gui::Display()
 {
 	/* draw main window */
 	draw_main_win();

@@ -62,10 +62,10 @@ in this Software without prior written authorization of the copyright holder.
 #include "callbacks/callbacks.hpp"
 
 /* GUI Class handling all the GUI and Callbacks */
-class Manga_GUI {
+class gui {
 	public:
-		Manga_GUI(int argc, char *argv[]);
-		~Manga_GUI();
+		gui(int argc, char *argv[]);
+		~gui();
 		void Display();
 
 	private:
