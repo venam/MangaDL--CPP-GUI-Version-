@@ -208,7 +208,9 @@ gui::delete_event( GtkWidget *widget, GdkEvent *event, gpointer data )
 	 * This is useful for popping up 'are you sure you want to quit?'
 	 * type dialogs. */
 	//DEBUG
+#ifdef DEBUG
 	g_print ("delete event occurred\n");
+#endif
 	/* Change TRUE to FALSE and the main window will be destroyed with
 	 * a "delete-event". */
 	gtk_main_quit();
@@ -462,13 +464,17 @@ gui::dl_manager_callback(GtkWidget *wid, gpointer user_data)
 	for (unsigned int i=0; i< user_callbacks->callbacks_config->cfg_download_managers.size() ; i++)
 		if ( user_callbacks->callbacks_config->cfg_download_managers[i].name==selected_dl){
 			user_callbacks->callbacks_config->cfg_download_managers[i].selected = true;
+#ifdef DEBUG
 			//DEBUG
 			std::cout<< user_callbacks->callbacks_config->cfg_download_managers[i].name<<" Selected "<<"\n";
+#endif
 		}
 		else {
 			user_callbacks->callbacks_config->cfg_download_managers[i].selected = false;
+#ifdef DEBUG
 			//DEBUG
 			std::cout<< user_callbacks->callbacks_config->cfg_download_managers[i].name<<"\n";
+#endif
 		}
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -545,7 +551,9 @@ gui::save_cfg_callback(GtkWidget *wid, gpointer user_data)
 	callbacks* user_callbacks = (callbacks*) user_data;
 	user_callbacks->callbacks_config->update_mg_location( user_callbacks->callbacks_config->cfg_current_location );
 	//DEBUG
+#ifdef DEBUG
 	std::cout<< user_callbacks->callbacks_config->cfg_current_location<<"\n";
+#endif
 	user_callbacks->callbacks_config->db_update_dl_manager( user_callbacks->callbacks_config->cfg_download_managers );
 
 	GtkWidget *dialog1 = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, 
@@ -630,7 +638,9 @@ gui::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 
 	for(unsigned int i=0; i< user_callbacks->callbacks_config->cfg_queue.size() ; i++) {
 		//DEBUG
+#ifdef DEBUG
 		std::cout<< user_callbacks->callbacks_config->cfg_queue[i].manga_name <<"\n";
+#endif
 	}
 
 }
@@ -692,15 +702,19 @@ gui::change_q_callback(GtkWidget *wid, gpointer user_data )
 	user_callbacks->callbacks_config->cfg_queue[active].end_chapter   = active_end;
 
 	//DEBUG
+#ifdef DEBUG
 	std::cout<<"here\n"
 		<<active
 		<<"\n";
+#endif
 
 	std::string to_add_to_combo = 
 		user_callbacks->callbacks_config->cfg_queue[active].manga_name+" | "+active_start+" -> "+active_end;
 
 	//DEBUG
+#ifdef DEBUG
 	std::cout<<to_add_to_combo <<"\n";
+#endif
 
 	/* Add to the combo box */
 	gtk_combo_box_text_insert_text( (GtkComboBoxText*) user_callbacks->callbacks_queue_combo, 
@@ -732,7 +746,9 @@ gui::delete_q_callback(GtkWidget *wid, gpointer user_data )
 	gtk_spin_button_set_value( (GtkSpinButton*) user_callbacks->callbacks_q_end_entry, 1);
 	/* remove from the combo box */
 	//DEBUG
+#ifdef DEBUG
 	std::cout<<active<<"\n";
+#endif
 	gtk_combo_box_remove_text ( (GtkComboBox*) user_callbacks->callbacks_queue_combo, active);
 	/* remove from the queue */
 	user_callbacks->callbacks_config->cfg_queue.erase( 

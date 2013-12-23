@@ -1,4 +1,4 @@
-CPPFLAGS=-g -O2 -std=c++11 -Wall `pkg-config gtk+-2.0 --cflags` 
+CPPFLAGS=-g -O2 -std=c++11 -Wall -DDEBUG `pkg-config gtk+-2.0 --cflags`
 LDLIBS=-lpthread -lcurl -lsqlite3 `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
 SRC=testing6.cpp
 OUT=test browser.o dl_facto.o dlder.o mgreader.o mgpark.o gui.o config.o
