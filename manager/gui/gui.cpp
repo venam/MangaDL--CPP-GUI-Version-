@@ -293,13 +293,14 @@ gui::start_download( void *user_data)
 	callbacks* user_callbacks = (callbacks*) user_data;
 	std::string download_command = "default";
 	std::string download_location = "";
-	for (unsigned int i=0; i< (user_callbacks->callbacks_config->get_download_managers() ).size() ; i++)
+	for (unsigned int i=0; i< (user_callbacks->callbacks_config->get_download_managers() ).size() ; i++) {
 		if ( user_callbacks->callbacks_config->cfg_download_managers[i].selected) {
 			download_command = user_callbacks->callbacks_config->cfg_download_managers[i].command ;
 		}
 		else {
 			// it's the default download manager
 		}
+	}
 	download_location = user_callbacks->callbacks_config->cfg_current_location;
 
 	g_timeout_add_seconds (3, update_bars, (gpointer) user_callbacks);
@@ -309,10 +310,20 @@ gui::start_download( void *user_data)
 		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_start_entry, 1);
 		gtk_spin_button_set_value( (GtkSpinButton*)user_callbacks->callbacks_q_end_entry, 1);
 		/* initialized the progress bars */
+		gtk_progress_bar_set_fraction( (GtkProgressBar*) user_callbacks->callbacks_pbar1, 0.0);
+		gtk_progress_bar_set_fraction( (GtkProgressBar*) user_callbacks->callbacks_pbar2, 0.0);
+		/* put some status text */
+		std::string stat_text = 
+			user_callbacks->callbacks_config->cfg_queue[0].manga_name 
+			+": "+user_callbacks->callbacks_config->cfg_queue[0].start_chapter
+			+"->"+ user_callbacks->callbacks_config->cfg_queue[0].end_chapter;
+		gtk_label_set_text( (GtkLabel*) user_callbacks->callbacks_stat_label, stat_text.c_str() );
+
 		user_callbacks->callbacks_downloader = user_callbacks->callbacks_factory->get_provider(
 				gtk_combo_box_get_active_text( 
 					(GtkComboBox*) user_callbacks->callbacks_provider_combo )
 				);
+
 		user_callbacks->callbacks_downloader->init( 
 				user_callbacks->callbacks_config->cfg_queue[0].manga_name,
 				download_location,
@@ -1180,8 +1191,8 @@ gui::draw_main_win()
 	/* set default stuffs inside the window */
 	gtk_container_set_border_width (GTK_CONTAINER (win), 0);
 //	gtk_window_set_default_size( GTK_WINDOW(win), 900,500);
-	gtk_widget_set_size_request ( (GtkWidget *)win, 600,350);
-	gtk_window_set_resizable ( GTK_WINDOW (win), false);
+	gtk_widget_set_size_request ( (GtkWidget *)win, 600,380);
+	gtk_window_set_resizable ( GTK_WINDOW (win), true);
 //	gtk_window_set_policy (GTK_WINDOW(win), FALSE, FALSE, FALSE);
 	gtk_window_set_title (GTK_WINDOW (win), "Manga Downloader");
 	gtk_window_set_position (GTK_WINDOW (win), GTK_WIN_POS_CENTER);
