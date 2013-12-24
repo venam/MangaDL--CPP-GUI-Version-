@@ -895,6 +895,7 @@ gui::hpack_2()
 
 	/* create a new label. */
 	gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
+	gtk_misc_set_alignment (GTK_MISC (stat_label), 0.5, 0.5);
 	gtk_box_pack_start (GTK_BOX (mainvbox), stat_label, FALSE, FALSE, 0);
 }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
