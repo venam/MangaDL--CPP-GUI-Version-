@@ -37,10 +37,11 @@ in this Software without prior written authorization of the copyright holder.
 
 #include "../../cfg/config.hpp"
 #include "../../dlder/dlder.hpp"
+#include "../gui.hpp"
 
 
 class callbacks {
-	public:
+	private:
 		//the widgets
 		GtkWidget*                     callbacks_win;
 		GtkWidget*                     callbacks_vbox;
@@ -71,7 +72,6 @@ class callbacks {
 		GtkWidget*                     callbacks_revert_item;
 		GtkAccelGroup*                 callbacks_accel_group;
 
-
 		//the state of the download
 		int*                           callbacks_downloader_state;
 
@@ -90,7 +90,8 @@ class callbacks {
 		std::vector<dl_mngr>          cfg_revert_download_managers;
 		*/
 		config*                        callbacks_config;
-
+	public:
+		friend class gui;
 };
 
 
