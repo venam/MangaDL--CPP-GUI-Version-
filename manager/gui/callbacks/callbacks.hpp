@@ -72,6 +72,7 @@ class callbacks {
 		GtkWidget*                     callbacks_revert_item;
 		GtkAccelGroup*                 callbacks_accel_group;
 
+
 		//the state of the download
 		int*                           callbacks_downloader_state;
 
@@ -92,6 +93,7 @@ class callbacks {
 		config*                        callbacks_config;
 	public:
 		friend class gui;
+
 };
 
 

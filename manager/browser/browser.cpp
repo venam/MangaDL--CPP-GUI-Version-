@@ -102,12 +102,14 @@ browser::init()
 	//maybe we'll loose the cookies if we do that
 	//curl            = curl_easy_init();
 
+	/* we don't want to reset the current headers nor the things we set up the curl handler with
 	struct curl_slist *headers  = NULL;
 	headers                     = curl_slist_append(headers, "Accept:");
 	if (headers) {
 		curl_slist_free_all(headers);
 	}
 	curl_easy_reset(br_curl);
+	*/
 }
 ///=================================================================================///
 
@@ -125,6 +127,7 @@ browser::clean()
 	br_history.clear();
 	init();
 	curl_easy_cleanup(br_curl);
+	curl_easy_reset(br_curl);
 	br_curl   = curl_easy_init();
 }
 ///=================================================================================///

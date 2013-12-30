@@ -52,6 +52,7 @@ dlder::dlder(
 	dlder_current_page    = 1;
 	dlder_paused_flag     = false;
 	dlder_stop_flag       = false;
+	create_browser();
 }
 dlder::dlder()
 {
@@ -67,6 +68,7 @@ dlder::dlder()
 	dlder_current_page    = 1;
 	dlder_paused_flag     = false;
 	dlder_stop_flag       = false;
+	create_browser();
 }
 dlder::~dlder()
 {
@@ -92,6 +94,7 @@ dlder::init(std::string manganame, std::string mg_location,
 	dlder_current_page        = 1;
 	dlder_paused_flag         = false;
 	dlder_stop_flag           = false;
+	create_browser();
 }
 ///=================================================================================///
 
@@ -103,8 +106,8 @@ dlder::create_browser()
 	dlder_br.add_useragent("Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1");
 	std::string header[2] = {"Referer","http://www.mangareader.net"};
 	dlder_br.add_headers(header);
-	dlder_br.set_handle_redirect(false);
-	dlder_br.set_handle_gzip(false);
+	dlder_br.set_handle_redirect(true);
+	dlder_br.set_handle_gzip(true);
 	dlder_br.set_handle_ssl(false);
 	dlder_br.set_verbose(false);
 }
