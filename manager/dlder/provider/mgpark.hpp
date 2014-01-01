@@ -56,10 +56,6 @@ class mgpark : public dlder{
 
 		//to implement
 		void run();
-		mg_status get_status();
-		void pause_unpause();
-		bool finished();
-		void stop();
 		void init(std::string manganame, std::string mg_location,
 			std::string external_dl_mgr,std::string start, std::string end);
 

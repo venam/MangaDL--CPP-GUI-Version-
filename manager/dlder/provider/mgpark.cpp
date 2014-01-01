@@ -72,37 +72,6 @@ mgpark::~mgpark()
 {
 }
 
-mg_status 
-mgpark::get_status()
-{
-	mg_status stat;
-	stat.start_chapter = atoi(dlder_start.c_str());
-	stat.cur_chapter   = dlder_current_chapter;
-	stat.end_chapter   = atoi(dlder_end.c_str());
-	stat.cur_page      = dlder_current_page-1;
-	stat.end_page      = dlder_nb_of_pages;
-	stat.finished      = dlder_stop_flag;
-	return stat;
-}
-
-void
-mgpark::stop()
-{
-	dlder_stop_flag = true;
-}
-
-void
-mgpark::pause_unpause()
-{
-	dlder_paused_flag = dlder_paused_flag? false: true;
-}
-
-bool
-mgpark::finished()
-{
-	return dlder_stop_flag;
-}
-
 void 
 mgpark::increase_current()
 {

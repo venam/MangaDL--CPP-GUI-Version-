@@ -96,9 +96,11 @@ class mgfox : public dlder {
 		void open_first_page();
 		//start dl
 		void start_downloading();
+		//download and place images for a chapter with sub chapters
+		void download_chapter(int chapter);
+		std::string get_next_link(std::string sub_chapter);
 
 	public:
-		void debug();
 		/*needs to be implemented */
 		mgfox(
 				std::string manganame, std::string mg_location,

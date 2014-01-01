@@ -26,10 +26,6 @@ Except as contained in this notice, the name of a copyright holder shall not
 be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
 
-*
-* TODO: If it's 404 return something that specify it doesn't exist.
-*       start downloading from a certain page
-*
 */
 
 /*
@@ -139,66 +135,6 @@ void mgfox::stop()
 
 
 ///=================================================================================///
-bool mgfox::chapter_end() 
-{
-	return ( dlder_current_page-1 == dlder_nb_of_pages);
-}
-///=================================================================================///
-
-
-///=================================================================================///
-void mgfox::increase_current()
-{
-	dlder_img  = to_string(atoi(dlder_img.c_str())+1);
-	if (dlder_img.size() == 1) {
-		dlder_img = "00"+dlder_img;
-	}
-	else if (dlder_img.size() == 2) {
-		dlder_img = "0"+dlder_img;
-	}
-	else {
-	}
-	dlder_current_page++;
-}
-///=================================================================================///
-
-
-///=================================================================================///
-void mgfox::increase_chapter()
-{
-	dlder_nb_of_pages          = 0;
-	dlder_current_page         = 1;
-	dlder_img                  = "000";
-	dlder_current_chapter++;
-	mgfox_next_link_url        = "http://www.mangafox.me/manga"+ dlder_manganame +"/"+ to_string(dlder_current_chapter) +"/";
-
-	dlder_current_page         = 2;
-}
-///=================================================================================///
-
-
-///=================================================================================///
-void mgfox::go_to_next_page()
-{
-	if (this->chapter_end()){
-		this->increase_chapter();
-	}
-	else {
-		this->increase_current();
-	}
-	mgfox_current_page_url = mgfox_next_link_url;
-}
-///=================================================================================///
-
-
-///=================================================================================///
-void mgfox::scrap_page() 
-{
-}
-///=================================================================================///
-
-
-///=================================================================================///
 void mgfox::scrap_first_page() 
 {
 	//get all lines in the html separately
@@ -255,12 +191,144 @@ void mgfox::scrap_first_page()
 		}
 	}
 
+#ifdef DEBUG
 	for (auto i : mgfox_all_chapters) {
 		for(auto j: i) {
 			std::cout<<j<<"--";
 		}
 		std::cout<<"\n";
 	}
+#endif
+}
+///=================================================================================///
+
+
+///=================================================================================///
+bool mgfox::chapter_end() 
+{
+	return ( dlder_current_page-1 == dlder_nb_of_pages);
+}
+///=================================================================================///
+
+
+///=================================================================================///
+void mgfox::increase_current()
+{
+	dlder_img  = to_string(atoi(dlder_img.c_str())+1);
+	if (dlder_img.size() == 1) {
+		dlder_img = "00"+dlder_img;
+	}
+	else if (dlder_img.size() == 2) {
+		dlder_img = "0"+dlder_img;
+	}
+	else {
+	}
+	dlder_current_page++;
+}
+///=================================================================================///
+
+
+///=================================================================================///
+void mgfox::increase_chapter()
+{
+	dlder_nb_of_pages          = 0;
+	dlder_current_page         = 1;
+	dlder_img                  = "000";
+	dlder_current_chapter++;
+	dlder_current_page         = 2;
+}
+///=================================================================================///
+
+
+///=================================================================================///
+void mgfox::go_to_next_page()
+{
+	if (this->chapter_end()){
+		this->increase_chapter();
+	}
+	else {
+		this->increase_current();
+	}
+	mgfox_current_page_url = mgfox_next_link_url;
+}
+///=================================================================================///
+
+
+///=================================================================================///
+void mgfox::scrap_page() 
+{
+	//get all lines in the html separately
+	std::vector<std::string> response_lines = split(dlder_br.response(), '\n');
+	for (auto line: response_lines) {
+		//get the image
+		if (word_in(line, ".jpg") and word_in(line, "onerror")) {
+			std::vector<std::string> splitter = split(line,'"');
+			dlder_url_img = splitter[5];
+			break;
+		}
+		else if ( word_in(line, "of ") and word_in(line,"</div")) {
+			std::string nb_of_pages = replaceAll2(line, "of ","");
+			nb_of_pages = replaceAll2(nb_of_pages, "</div>","");
+			nb_of_pages = replaceAll2(nb_of_pages," ","");
+			dlder_nb_of_pages = atoi(nb_of_pages.c_str());
+		}
+	}
+#ifdef DEBUG
+	std::cout<<dlder_url_img<<"\n";
+	std::cout<<dlder_nb_of_pages<<"\n";
+#endif
+}
+///=================================================================================///
+
+
+///=================================================================================///
+std::string mgfox::get_next_link(std::string sub_chapter)
+{
+	int i;
+	for (  i=sub_chapter.length()-1; i>5; i--) {
+		if (sub_chapter[i] == '/') {
+			break;
+		}
+		else {
+		}
+	}
+	return sub_chapter.substr(0,i+1) +to_string(dlder_current_page)+".htm";
+}
+///=================================================================================///
+
+
+///=================================================================================///
+void mgfox::download_chapter(int chapter)
+{
+	//download all sub-chapters
+#ifdef DEBUG
+	for (auto sub_chapter: mgfox_all_chapters[chapter]) {
+		std::cout<<sub_chapter<<"\n";
+	}
+#endif
+	for( auto sub_chapter: mgfox_all_chapters[chapter] ) {
+		//until the whole chapter is downloaded
+		mgfox_next_link_url = sub_chapter;
+		if (dlder_stop_flag) {
+			break;
+		}
+		else {
+			while ( not this->chapter_end()  and not dlder_stop_flag) {
+				//open chapter and scrap it for all necessary data
+				do {
+					dlder_br.open(mgfox_next_link_url,120);
+				} while (dlder_br.error());
+				scrap_page();
+				mgfox_next_link_url = get_next_link(sub_chapter);
+				dlder::manage_chapters();
+				dlder::download_image();
+				increase_current();
+			}
+		}
+		dlder_current_page = 2;
+	}
+	//reinitialize variables
+	dlder_img   = "000";
 }
 ///=================================================================================///
 
@@ -268,6 +336,25 @@ void mgfox::scrap_first_page()
 ///=================================================================================///
 void mgfox::start_downloading()
 {
+	// if the end > the number of chapters
+	if ( atoi(dlder_end.c_str()) > mgfox_all_chapters.size() ) {
+		dlder_end = to_string(mgfox_all_chapters.size()-1);
+	}
+	else {
+		//it's ok the end is within the known chapters
+	}
+
+	// if the start is the end aka only dl 1 chapter
+	if ( dlder_end == dlder_start ) {
+		download_chapter( atoi(dlder_start.c_str())-1 );
+	}
+	else {
+		for ( int i= atoi(dlder_start.c_str())-1; i < atoi(dlder_end.c_str()); i++ ) {
+			download_chapter(i);
+			increase_chapter();
+		}
+	}
+	dlder_stop_flag = true;
 }
 ///=================================================================================///
 
@@ -292,14 +379,5 @@ void mgfox::run()
 }
 ///=================================================================================///
 
-
-void mgfox::debug() 
-{
-	std::cout<<"opening first page\n";
-	open_first_page();
-	std::cout<<"scraping shit out of it\n";
-	scrap_first_page();
-	std::cout<<"end\n";
-}
 
 

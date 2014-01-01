@@ -62,10 +62,10 @@ class dlder {
 		virtual void init(std::string manganame, std::string mg_location,
 			std::string external_dl_mgr,std::string start, std::string end);
 		virtual void run()=0;
-		virtual mg_status get_status()=0;
-		virtual void pause_unpause()=0;
-		virtual bool finished()=0;
-		virtual void stop()=0;
+		virtual mg_status get_status();
+		virtual void pause_unpause();
+		virtual bool finished();
+		virtual void stop();
 
 	protected:
 		browser      dlder_br;

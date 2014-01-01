@@ -7,7 +7,7 @@ OUT=test
 OUT_O=test.o
 RM=rm -f
 
-all: browser.so dlder.so mgreader.o mgpark.o dl_facto.so  gui.so config.so
+all: browser.so dlder.so dl_facto.so  gui.so config.so
 	g++ $(CPPFLAGS) $(SRC) -c -o $(OUT_O)
 	g++ $(OUT_O) $(LDLIBS) -o $(OUT)
 
@@ -25,9 +25,12 @@ mgreader.o:
 mgpark.o:
 	g++ $(CPPFLAGS) manager/dlder/provider/mgpark.cpp -c -o mgpark.o
 
-dl_facto.so:
+mgfox.o:
+	g++ $(CPPFLAGS) manager/dlder/provider/mgfox.cpp -c -o mgfox.o
+
+dl_facto.so: mgreader.o mgpark.o mgfox.o
 	g++ $(CPPFLAGS)  manager/dlder/dl_facto.cpp -c -o dl_facto.o
-	g++ -shared -fPIC -o libdl_facto.so dl_facto.o mgreader.o mgpark.o
+	g++ -shared -fPIC -o libdl_facto.so dl_facto.o mgfox.o mgreader.o mgpark.o
 
 gui.so:
 	g++ $(CPPFLAGS)  manager/gui/gui.cpp -c -o gui.o

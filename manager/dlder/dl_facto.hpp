@@ -34,6 +34,7 @@ in this Software without prior written authorization of the copyright holder.
 #include "dlder.hpp"
 #include "provider/mgreader.hpp"
 #include "provider/mgpark.hpp"
+#include "provider/mgfox.hpp"
 #include <vector>
 #include <string>
 
