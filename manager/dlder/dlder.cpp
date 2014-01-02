@@ -213,9 +213,24 @@ dlder::download_image()
 		}
 		else {
 			int status = 1;
+			int times  = 1 ;
+			int sleep_time = 1;
 			std::string command =  command_converter();
 			while (status != 0) {
 				status = system(command.c_str());
+				if (status !=0) {
+					times++;
+					//after 10 errors sleep 10 more seconds
+					if (times%10 ==0) {
+#ifdef DEBUG
+						std::cerr<<"too many error adding 10s to sleep\n";
+#endif
+						sleep_time+=10;
+					}
+					else {
+					}
+					sleep(sleep_time);
+				}
 			}
 		}
 		std::cout<< where_to << "\n";
