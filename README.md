@@ -19,6 +19,6 @@ Compile with : <pre>make</pre>
 
 Here's the wannabe new design
 
-![New Design](https://github.com/venam/MangaDL--CPP-GUI-Version-/raw/testing/new_design_pattern.png)
+![New Design](https://github.com/venam/MangaDL--CPP-GUI-Version-/raw/master/mangaDL_design_pattern.png)
 
 PS: You should read your mangas with mcomix or comix.
