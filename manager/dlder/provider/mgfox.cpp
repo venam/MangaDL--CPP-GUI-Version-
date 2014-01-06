@@ -338,7 +338,7 @@ void mgfox::start_downloading()
 {
 	// if the end > the number of chapters
 	if ( atoi(dlder_end.c_str()) > mgfox_all_chapters.size() ) {
-		dlder_end = to_string(mgfox_all_chapters.size()-1);
+		dlder_end = to_string(mgfox_all_chapters.size());
 	}
 	else {
 		//it's ok the end is within the known chapters
