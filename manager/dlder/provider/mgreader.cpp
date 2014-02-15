@@ -43,7 +43,7 @@ mgreader::mgreader(std::string manganame, std::string mg_location,
 	std::string external_dl_mgr,std::string start, std::string end)
 	: dlder( manganame, mg_location, external_dl_mgr, start, end)
 {
-	fill_in_resolver();
+//	fill_in_resolver();
 	mgreader_current_page_url     ="http://www.mangareader.net/"+ dlder_manganame+"/"+dlder_start +"/";
 	dlder_current_page        = 2;
 	//vars
@@ -55,7 +55,7 @@ mgreader::mgreader(std::string manganame, std::string mg_location,
 ///=================================================================================///
 mgreader::mgreader() : dlder()
 {
-	fill_in_resolver();
+//	fill_in_resolver();
 	mgreader_current_page_url    ="http://www.mangareader.net/";
 	//vars
 	mgreader_next_link        = "";
@@ -270,7 +270,7 @@ mgreader::autoresolve()
 void
 mgreader::download_image()
 {
-	autoresolve();
+	//autoresolve();
 	dlder::download_image();
 }
 ///=================================================================================///
