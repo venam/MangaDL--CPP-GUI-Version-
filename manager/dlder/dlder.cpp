@@ -212,13 +212,13 @@ dlder::download_image()
 			}while (dlder_br.error());
 		}
 		else {
-			int status = 1;
+			int status = -1;
 			int times  = 1 ;
 			int sleep_time = 1;
 			std::string command =  command_converter();
-			while (status != 0) {
+			while (status == -1 || status&127) {
 				status = system(command.c_str());
-				if (status !=0) {
+				if (status ==-1 || status&127) {
 					times++;
 					//after 10 errors sleep 10 more seconds
 					if (times%10 ==0) {
