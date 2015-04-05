@@ -216,9 +216,9 @@ dlder::download_image()
 			int times  = 1 ;
 			int sleep_time = 1;
 			std::string command =  command_converter();
-			while (status == -1 || status&127) {
+			while (status != 0 ) {
 				status = system(command.c_str());
-				if (status ==-1 || status&127) {
+				if (status != 0) {
 					times++;
 					//after 10 errors sleep 10 more seconds
 					if (times%10 ==0) {
