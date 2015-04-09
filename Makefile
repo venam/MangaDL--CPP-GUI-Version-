@@ -1,6 +1,6 @@
 CPPFLAGS=-g -fPIC -O2 -std=c++11 -Wall -DDEBUG `pkg-config gtk+-2.0 --cflags`
 LDLIBS=-L. -Wl,-rpath,. \
-	   -lbrowser -ldlder -lgui -ldl_facto -lconfig \
+	   -lgui -ldl_facto -lbrowser -ldlder -lconfig \
 	   -lpthread -lcurl -lsqlite3 `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
 SRC=testing6.cpp
 OUT=test

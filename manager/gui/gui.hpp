@@ -57,6 +57,7 @@ in this Software without prior written authorization of the copyright holder.
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms-compat.h>
 
+#include "../browser/regex.hpp"
 #include "../cfg/config.hpp"
 #include "../dlder/dl_facto.hpp"
 #include "callbacks/callbacks.hpp"
