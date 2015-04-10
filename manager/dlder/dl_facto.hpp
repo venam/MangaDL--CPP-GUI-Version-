@@ -35,6 +35,7 @@ in this Software without prior written authorization of the copyright holder.
 #include "provider/mgreader.hpp"
 #include "provider/mgpark.hpp"
 #include "provider/mgfox.hpp"
+#include "../browser/regex.hpp"
 #include <vector>
 #include <string>
 
