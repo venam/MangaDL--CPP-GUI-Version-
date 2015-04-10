@@ -104,13 +104,13 @@ mgpark::scrap_page()
 	//loop backward so there will be no need to reverse the vector later on
 	for (int i=response_lines.size()-1; i>=0;i--) {
 		//a new chapter has been found
-		if (word_in(response_lines[i],">All</a>")) {
+		if (word_in(response_lines[i],">all</a>")) {
 			std::vector<std::string> url_split = split(response_lines[i], '\"');
 			std::string url = url_split[1];
 			int manga_name_place = url.find(dlder_manganame);
 			std::string tmp = url.substr(manga_name_place+dlder_manganame.size(),url.size()-1);
 			if ( !word_in( tmp,"-" ) || !word_in( tmp, "+") || !word_in( tmp, ".") ) {
-				mgpark_chapters.push_back( "http://www.mangapark.com"+ url);
+				mgpark_chapters.push_back( "http://www.mangapark.me"+ url);
 			}
 			else {
 			}
@@ -209,7 +209,7 @@ void
 mgpark::open_first_page()
 {
 	do {
-		dlder_br.open("http://www.mangapark.com/manga/"+dlder_manganame,100);
+		dlder_br.open("http://www.mangapark.me/manga/"+dlder_manganame,100);
 	} while(dlder_br.error());
 }
 

@@ -1,0 +1,30 @@
+CPPFLAGS=-g -fPIC -std=c++11 -Wall -DDEBUG 
+LDLIBS=-L. -Wl,-rpath,. \
+	   -lbrowser -ldlder \
+	   -lpthread -lcurl
+SRC=t.cpp
+OUT=test
+OUT_O=test.o
+RM=rm -f
+
+all: browser.so dlder.so mgpark.o
+	g++ $(CPPFLAGS) $(SRC) -c -o $(OUT_O) mgpark.o
+	g++ $(OUT_O) $(LDLIBS) -o $(OUT) mgpark.o
+
+browser.so: manager/browser/browser.cpp
+	g++ $(CPPFLAGS) manager/browser/browser.cpp -c -o browser.o
+	g++ -shared -fPIC -o libbrowser.so browser.o
+
+dlder.so: manager/dlder/dlder.cpp
+	g++ $(CPPFLAGS) manager/dlder/dlder.cpp -c -o dlder.o
+	g++ -shared -fPIC -o libdlder.so dlder.o
+
+mgpark.o: manager/dlder/provider/mgpark.cpp
+	g++ $(CPPFLAGS) manager/dlder/provider/mgpark.cpp -c -o mgpark.o
+
+clean:
+	$(RM) *.o
+	$(RM) *.so
+	$(RM) $(OUT)
+
+
