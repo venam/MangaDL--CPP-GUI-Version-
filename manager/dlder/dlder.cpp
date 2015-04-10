@@ -116,7 +116,7 @@ mg_status dlder::get_status()
 ///=================================================================================///
 void dlder::pause_unpause()
 {
-	dlder_paused_flag = dlder_paused_flag? false: true;
+	dlder_paused_flag = !dlder_paused_flag;
 }
 ///=================================================================================///
 
