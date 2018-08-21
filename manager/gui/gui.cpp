@@ -633,7 +633,7 @@ gui::add_to_q_callback(GtkWidget *wid, gpointer user_data)
 		//TODO: do some verification
 	}
 
-	replaceAll(mgname_to_add, " ","");
+	//replaceAll(mgname_to_add, " ","");
 
 	std::string to_add_to_combo = 
 		mgname_to_add+" | "+to_string(start_int)+" -> "+to_string(end_int);

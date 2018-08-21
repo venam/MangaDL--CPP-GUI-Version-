@@ -46,6 +46,7 @@ dlder::dlder(
 	dlder_start           = start;
 	dlder_end             = end;
 	dlder_img             = "000";
+	dlder_referer         = "";
 	dlder_nb_of_chapter   = 0;
 	dlder_current_chapter = atoi(start.c_str());
 	dlder_nb_of_pages     = 0;
@@ -61,6 +62,7 @@ dlder::dlder()
 	dlder_external_dl_mgr = "";
 	dlder_start           = "";
 	dlder_end             = "";
+	dlder_referer         = "";
 	dlder_img             = "000";
 	dlder_nb_of_chapter   = 0;
 	dlder_current_chapter = 1;
@@ -86,6 +88,7 @@ dlder::init(std::string manganame, std::string mg_location,
 	dlder_external_dl_mgr     = external_dl_mgr;
 	dlder_start                = start;
 	dlder_end                 = end;
+	dlder_referer             = "";
 	dlder_url_img             = "";
 	dlder_img                 = "000";
 	dlder_nb_of_chapter       = 0;
@@ -245,6 +248,7 @@ dlder::command_converter()
 {
 	std::string command = replaceAll2( dlder_external_dl_mgr, "[INPUT]", dlder_url_img);
 	command             = replaceAll2( command, "[OUTPUT]", dlder_img+".jpg");
+	command             = replaceAll2( command, "[REFERER]", dlder_referer);
 	std::cout<<command<<"\n";
 	return command;
 }

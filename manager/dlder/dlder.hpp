@@ -76,6 +76,7 @@ class dlder {
 		std::string  dlder_end;
 		std::string  dlder_url_img;
 		std::string  dlder_img;
+		std::string  dlder_referer;
 
 		unsigned int dlder_nb_of_chapter;
 		unsigned int dlder_current_chapter;

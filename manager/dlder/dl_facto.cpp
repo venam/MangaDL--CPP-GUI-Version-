@@ -40,6 +40,7 @@ dl_facto::dl_facto()
 	dl_facto_all_providers.push_back("mgreader");
 	dl_facto_all_providers.push_back("mgpark");
 	dl_facto_all_providers.push_back("mgfox");
+	dl_facto_all_providers.push_back("webtoons");
 }
 ///=================================================================================///
 
@@ -77,6 +78,9 @@ dl_facto::get_provider(std::string provider)
 	}
 	else if (provider == "mgfox") {
 		dl_facto_dlder = new mgfox();
+	}
+	else if (provider == "webtoons") {
+		dl_facto_dlder = new webtoons();
 	}
 	else {
 		std::cerr<<"Provider not found, using mgreader instead";

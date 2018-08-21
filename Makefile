@@ -1,9 +1,11 @@
+print-%: ; @echo $*=$($*)
+
 CPPFLAGS=-g -fPIC -O2 -std=c++11 -Wall -DDEBUG `pkg-config gtk+-2.0 --cflags`
 LDLIBS=-L. -Wl,-rpath,. \
 	   -lgui -ldl_facto -lbrowser -ldlder -lconfig \
 	   -lpthread -lcurl -lsqlite3 `pkg-config gtk+-2.0 --cflags` `pkg-config gtk+-2.0 --libs`
 SRC=testing6.cpp
-OUT=test
+OUT=mgdl
 OUT_O=test.o
 RM=rm -f
 
@@ -22,15 +24,18 @@ dlder.so: manager/dlder/dlder.cpp
 mgreader.o: manager/dlder/provider/mgreader.cpp
 	g++ $(CPPFLAGS) manager/dlder/provider/mgreader.cpp -c -o mgreader.o
 
+webtoons.o: manager/dlder/provider/webtoons.cpp
+	g++ $(CPPFLAGS) manager/dlder/provider/webtoons.cpp -c -o webtoons.o
+
 mgpark.o: manager/dlder/provider/mgpark.cpp
 	g++ $(CPPFLAGS) manager/dlder/provider/mgpark.cpp -c -o mgpark.o
 
 mgfox.o: manager/dlder/provider/mgfox.cpp
 	g++ $(CPPFLAGS) manager/dlder/provider/mgfox.cpp -c -o mgfox.o
 
-dl_facto.so: mgreader.o mgpark.o mgfox.o manager/dlder/dl_facto.cpp
+dl_facto.so: webtoons.o mgreader.o mgpark.o mgfox.o manager/dlder/dl_facto.cpp
 	g++ $(CPPFLAGS)  manager/dlder/dl_facto.cpp -c -o dl_facto.o
-	g++ -shared -fPIC -o libdl_facto.so dl_facto.o mgfox.o mgreader.o mgpark.o
+	g++ -shared -fPIC -o libdl_facto.so dl_facto.o mgfox.o webtoons.o mgreader.o mgpark.o
 
 gui.so: manager/gui/gui.cpp
 	g++ $(CPPFLAGS)  manager/gui/gui.cpp -c -o gui.o
